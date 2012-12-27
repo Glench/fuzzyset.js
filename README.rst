@@ -12,9 +12,9 @@ Usage
 The usage is simple. Just add a string to the set, and ask for it later
 by using ``.get``::
 
-   >>> a = FuzzySet()
-   >>> a.add("michael axiak")
-   >>> a.get("micael asiak")
+   a = FuzzySet()
+   a.add("michael axiak")
+   a.get("micael asiak")
    [[0.8461538461538461, 'michael axiak']]
 
 The result will be an array of ``[score, mached_value]`` arrays.
@@ -27,6 +27,15 @@ Construction Arguments
  - use_levenshtein: Whether or not to use the levenshtein distance to determine the match scoring. Default: True
  - gram_size_lower: The lower bound of gram sizes to use, inclusive (see Theory of operation). Default: 2
  - gram_size_upper: The upper bound of gram sizes to use, inclusive (see Theory of operation). Default: 3
+
+Methods
+-------
+
+ - get(value, [default]): try to match a string to entries, otherwise return `null` or `default` if it is given.
+ - add(value): add a value to the set returning `false` if it is already in the set.
+ - length(): return the number of items in the set.
+ - isEmpty(): returns true if the set is empty.
+ - values(): returns an array of the values in the set.
 
 Theory of operation
 -------------------
