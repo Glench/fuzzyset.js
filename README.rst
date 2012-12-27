@@ -124,4 +124,4 @@ Mike Axiak <mike@axiak.net>
 JavaScript Port Author
 --------
 
-Glen Chiacchieri
+Glen Chiacchieri (http://glench.com)
