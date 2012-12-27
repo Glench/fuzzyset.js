@@ -23,10 +23,10 @@ The score is between 0 and 1, with 1 being a perfect match.
 Construction Arguments
 ----------------------
 
- - iterable: An iterable that yields strings to initialize the data structure with
- - use_levenshtein: Whether or not to use the levenshtein distance to determine the match scoring. Default: True
- - gram_size_lower: The lower bound of gram sizes to use, inclusive (see Theory of operation). Default: 2
- - gram_size_upper: The upper bound of gram sizes to use, inclusive (see Theory of operation). Default: 3
+ - array: An array of strings to initialize the data structure with
+ - useLevenshtein: Whether or not to use the levenshtein distance to determine the match scoring. Default: True
+ - gramSizeLower: The lower bound of gram sizes to use, inclusive (see Theory of operation). Default: 2
+ - gramSizeUpper: The upper bound of gram sizes to use, inclusive (see Theory of operation). Default: 3
 
 Methods
 -------
@@ -121,7 +121,7 @@ Python Author
 Mike Axiak <mike@axiak.net>
 
 
-JavaScript Author
+JavaScript Port Author
 --------
 
 Glen Chiacchieri
