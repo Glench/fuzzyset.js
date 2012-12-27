@@ -1,0 +1,18 @@
+{
+   "name":"fuzzyset.js",
+   "description":"A fuzzy string set for JavaScript",
+   "version":"0.0.10",
+   "homepage":"http://github.com/Glench/fuzzyset.js",
+   "repository":"git://github.com/Glench/fuzzyset.js.git",
+   "author":"Glen Chiacchieri (http://glench.com/)",
+   "main":"./index.js",
+   "devDependencies":{
+      "should":"*"
+   },
+   "scripts":{
+      "test":""
+   },
+   "engines":{
+      "node":">= 0.4.0"
+   }
+}
