@@ -158,8 +158,7 @@ a.get("micael asiak");
                 <p>Next the fuzzyset essentially creates a reverse index on those grams. Maintaining a dictionary that says:</p>
                 <pre>'mic' -&gt; (1, 0)
 'ich' -&gt; (2, 0)
-...
-                </pre>
+...</pre>
                 <p>where the first number is the number of grams and the second number is the index of the item in a list that looks like:</p>
                 <pre>[[3.31, 'michaelich']]</pre>
                 <p>Note that we maintain this reverse index for <em>all</em> grams from <code>gram_size_lower</code> to <code>gram_size_upper</code> in the constructor.
