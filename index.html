@@ -137,7 +137,13 @@ a.get("micael asiak");
             <hr/>
 
             <div class="row">
-                <div class="span12">
+                <div class="span4" id="example">
+                    <h2>Example</h2>
+                    <input type="search" placeholder="Type misspelled state" id="example"/>
+                    <ul id="results">
+                    </ul>
+                </div>
+                <div class="span8">
                 <h2>Theory of Operation</h2>
 
                 <h3>Adding to the data structure</h3>
@@ -192,14 +198,101 @@ a.get("micael asiak");
 
         </div> <!-- /container -->
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.8.3.min.js"><\/script>')</script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 
         <script src="site/js/vendor/bootstrap.min.js"></script>
 
         <script src="lib/fuzzyset.js"></script>
         <script>
+            $(document).ready(function() {
+                var states = [
+                    "Alabama",
+                    "Alaska",
+                    "American Samoa",
+                    "Arizona",
+                    "Arkansas",
+                    "California",
+                    "Colorado",
+                    "Connecticut",
+                    "Delaware",
+                    "District of Columbia",
+                    "Florida",
+                    "Georgia",
+                    "Guam",
+                    "Hawaii",
+                    "Idaho",
+                    "Illinois",
+                    "Indiana",
+                    "Iowa",
+                    "Kansas",
+                    "Kentucky",
+                    "Louisiana",
+                    "Maine",
+                    "Maryland",
+                    "Massachusetts",
+                    "Michigan",
+                    "Minnesota",
+                    "Mississippi",
+                    "Missouri",
+                    "Montana",
+                    "Nebraska",
+                    "Nevada",
+                    "New Hampshire",
+                    "New Jersey",
+                    "New Mexico",
+                    "New York",
+                    "North Carolina",
+                    "North Dakota",
+                    "Northern Marianas Islands",
+                    "Ohio",
+                    "Oklahoma",
+                    "Oregon",
+                    "Pennsylvania",
+                    "Puerto Rico",
+                    "Rhode Island",
+                    "South Carolina",
+                    "South Dakota",
+                    "Tennessee",
+                    "Texas",
+                    "Utah",
+                    "Vermont",
+                    "Virginia",
+                    "Virgin Islands",
+                    "Washington",
+                    "West Virginia",
+                    "Wisconsin",
+                    "Wyoming"
+                ];
+                statesFuzzy = FuzzySet(states);
+                var resultsHtml = '';
+                var values = statesFuzzy.values();
+                for (var i = 0; i < states.length; ++i) {
+                    resultsHtml += '<li>'+ states[i] +'</li>\n';
+                }
+                $('#results').html(resultsHtml);
 
+                $('#example input').on('keyup', function(evt) {
+                    if ($(this).val()) {
+                        var results = statesFuzzy.get($(this).val()) || [];
+                        var $results = $('#results');
+                        var resultsHtml = '';
+                        if (!results.length) {
+                            $results.html('No results found :(');
+                        } else {
+                            for (var i = 0; i < results.length; ++i) {
+                                resultsHtml += '<li>'+ results[i][1] +'</li>\n';
+                            }
+                            $results.html(resultsHtml);
+                        }
+                    } else {
+                        var resultsHtml = '';
+                        for (var i = 0; i < states.length; ++i) {
+                            resultsHtml += '<li>'+ states[i] +'</li>\n';
+                        }
+                        $('#results').html(resultsHtml);
+                    }
+                });
+            });
         </script>
     </body>
 </html>
