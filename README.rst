@@ -107,9 +107,11 @@ the failure to match will be quick). Bigram searching will always be slower beca
 Install
 --------
 this::
+
     <script type="text/javascript" src="/path/to/fuzzyset.js"></script>
 
 or::
+
     npm install fuzzyset.js
 
 
