@@ -177,8 +177,8 @@ a.get("micael asiak");
                 this is just a dictionary lookup 5 times. For each of these matched elements, we compute the <a href="http://en.wikipedia.org/wiki/Cosine_similarity">cosine similarity</a> between
                 each element and the query string. We then sort to get the most similar matched elements.</p>
                 <p>If <code>use_levenshtein</code> is false, then we return all top matched elements with the same cosine similarity.</p>
-                <p>If <code>use_levenshtein</code> is true, then we truncate the possible search space to 50, compute a score based on the levenshtein
-                distance (so that we handle transpositions), and return based on that.</p>
+                <p>If <code>use_levenshtein</code> is true, then we truncate the possible search space to 50, compute a score based on the <a href="http://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein
+                distance</a> (so that we handle transpositions), and return based on that.</p>
                 <p>In the event that none of the trigrams matched, we try the whole thing again with bigrams (note though that if there are no matches,
                 the failure to match will be quick). Bigram searching will always be slower because there will be a much larger set to order.</p>
                 </div>
