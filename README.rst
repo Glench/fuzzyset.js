@@ -12,10 +12,10 @@ Usage
 The usage is simple. Just add a string to the set, and ask for it later
 by using ``.get``::
 
-   a = FuzzySet()
-   a.add("michael axiak")
-   a.get("micael asiak")
-   [[0.8461538461538461, 'michael axiak']]
+   a = FuzzySet();
+   a.add("michael axiak");
+   a.get("micael asiak");
+   [[0.8461538461538461, 'michael axiak']];
 
 The result will be an array of ``[score, mached_value]`` arrays.
 The score is between 0 and 1, with 1 being a perfect match.
