@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="site/css/bootstrap.min.css">
+        <style>
+            body {
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+        </style>
+        <link rel="stylesheet" href="site/css/bootstrap-responsive.min.css">
+        <link rel="stylesheet" href="site/css/main.css">
+
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
+
+        <!-- <div class="navbar navbar-inverse navbar-fixed-top"> -->
+        <!--     <div class="navbar-inner"> -->
+        <!--         <div class="container"> -->
+        <!--             <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> -->
+        <!--                 <span class="icon-bar"></span> -->
+        <!--                 <span class="icon-bar"></span> -->
+        <!--                 <span class="icon-bar"></span> -->
+        <!--             </a> -->
+        <!--             <a class="brand" href="#">fuzzyset.js</a> -->
+        <!--         </div> -->
+        <!--     </div> -->
+        <!-- </div> -->
+
+        <div class="container">
+
+            <div class="hero-unit">
+                <h1>fuzzyset.js</h1>
+                <p>A fuzzy string set for javascript. A data structure that performs something akin to fulltext search against data to determine likely mispellings and approximate string matching.</p>
+                <p><a class="btn btn-primary btn-large" href="https://github.com/Glench/fuzzyset.js">View and Download on Github &raquo;</a></p>
+            </div>
+
+            <div class="row">
+                <div class="span4">
+                    <h2>Usage</h2>
+                    <pre>
+a = FuzzySet(['Michael Axiak']);
+a.get("micael asiak");
+[[0.8461538461538461, 'Michael Axiak']]
+</pre>
+                </div>
+                <div class="span3">
+                    <h2>Install</h2>
+                    <code>&lt;script src="fuzzyset.js"&gt;&lt;/script&gt;</code>
+                    <p>or</p>
+                    <code>npm install fuzzyset.js</code>
+               </div>
+                <div class="span5">
+                    <h2>Try it out</h2>
+
+                    <p>Open up your console and try it out! <code>f = FuzzySet(['what'])</code></p>
+                    <p>Also check out the <a href="https://github.com/axiak/fuzzyset">python version</a>.</p>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+                <div class="span6">
+                    <h2>Constructor Arguments</h2>
+                    <p>Methods to constructor function <code>FuzzySet()</code>.</p>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Argument</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td>array</td>
+                            <td>An array of strings to initialize the data structure with</td>
+                        </tr>
+                        <tr>
+                            <td>useLevenshtein</td>
+                            <td>Whether or not to use the levenshtein distance to determine the match scoring. Default: True</td>
+                        </tr>
+                        <tr>
+                            <td>gramSizeLower</td>
+                            <td>The lower bound of gram sizes to use, inclusive (see Theory of operation). Default: 2</td>
+                        </tr>
+                        <tr>
+                            <td>gramSizeUpper</td>
+                            <td>The upper bound of gram sizes to use, inclusive (see Theory of operation). Default: 3</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="span6">
+                    <h2>Methods</h2>
+                    <p>Methods on initialized <code>FuzzySet</code> object.</p>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Method</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td>get(value, [default])</td>
+                            <td>try to match a string to entries, otherwise return null or default if it is given.</td>
+                        </tr>
+                        <tr>
+                            <td>add(value)</td>
+                            <td>add a value to the set returning false if it is already in the set.</td>
+                        </tr>
+                        <tr>
+                            <td>length()</td>
+                            <td>return the number of items in the set.</td>
+                        </tr>
+                        <tr>
+                            <td>isEmpty()</td>
+                            <td>returns true if the set is empty.</td>
+                        </tr>
+                        <tr>
+                            <td>values()</td>
+                            <td>returns an array of the values in the set.</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+                <div class="span12">
+                <h2>Theory of Operation</h2>
+
+                <h3>Adding to the data structure</h3>
+                <p>First let's look at adding a string, 'michaelich' to an empty set. We first break apart the string into n-grams (strings of length
+                n). So trigrams of 'michaelich' would look like:</p>
+                <pre>'-mi'
+'mic'
+'ich'
+'cha'
+'hae'
+'ael'
+'eli'
+'lic'
+'ich'
+'ch-' </pre>
+                <p>Note that fuzzyset will first normalize the string by removing non word characters except for spaces and commas and force
+                everything to be lowercase.</p>
+                <p>Next the fuzzyset essentially creates a reverse index on those grams. Maintaining a dictionary that says:</p>
+                <pre>'mic' -&gt; (1, 0)
+'ich' -&gt; (2, 0)
+...
+                </pre>
+                <p>where the first number is the number of grams and the second number is the index of the item in a list that looks like:</p>
+                <pre>[[3.31, 'michaelich']]</pre>
+                <p>Note that we maintain this reverse index for <em>all</em> grams from <code>gram_size_lower</code> to <code>gram_size_upper</code> in the constructor.
+                This becomes important in a second.</p>
+                <h3>Retrieving</h3>
+                <p>To search the data structure, we take the n-grams of the query string and perform a reverse index look up. To illustrate,
+                let's consider looking up <code>'michael'</code> in our fictitious set containing <code>'michaelich'</code> where the <code>gram_size_upper</code>
+                and <code>gram_size_lower</code> parameters are default (3 and 2 respectively).</p>
+                <p>We begin by considering first all trigrams (the value of <code>gram_size_upper</code>). Those grams are:</p>
+                <pre>'-mi'
+'mic'
+'ich'
+'cha'
+'el-'</pre>
+                <p>Then we create a list of any element in the set that has <em>at least one</em> occurrence of a trigram listed above. Note that
+                this is just a dictionary lookup 5 times. For each of these matched elements, we compute the <a href="http://en.wikipedia.org/wiki/Cosine_similarity">cosine similarity</a> between
+                each element and the query string. We then sort to get the most similar matched elements.</p>
+                <p>If <code>use_levenshtein</code> is false, then we return all top matched elements with the same cosine similarity.</p>
+                <p>If <code>use_levenshtein</code> is true, then we truncate the possible search space to 50, compute a score based on the levenshtein
+                distance (so that we handle transpositions), and return based on that.</p>
+                <p>In the event that none of the trigrams matched, we try the whole thing again with bigrams (note though that if there are no matches,
+                the failure to match will be quick). Bigram searching will always be slower because there will be a much larger set to order.</p>
+                </div>
+            </div>
+
+            <hr/>
+
+            <footer>
+                <p>By <a href="http://glench.com">Glen Chiacchieri</a></p>
+            </footer>
+
+        </div> <!-- /container -->
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.8.3.min.js"><\/script>')</script>
+
+        <script src="site/js/vendor/bootstrap.min.js"></script>
+
+        <script src="lib/fuzzyset.js"></script>
+        <script>
+
+        </script>
+    </body>
+</html>
