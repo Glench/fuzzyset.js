@@ -17,7 +17,7 @@ by using ``.get``::
    a.get("micael asiak");
    [[0.8461538461538461, 'michael axiak']];
 
-The result will be an array of ``[score, mached_value]`` arrays.
+The result will be an array of ``[score, matched_value]`` arrays.
 The score is between 0 and 1, with 1 being a perfect match.
 
 Construction Arguments
