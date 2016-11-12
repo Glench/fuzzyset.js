@@ -1,1 +1,3 @@
-module.exports = require('./lib/fuzzyset.js');
+'use strict';
+
+module.exports = require('./lib');
