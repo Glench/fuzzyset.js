@@ -5,6 +5,13 @@
    "homepage":"http://Glench.github.com/fuzzyset.js",
    "repository":"git://github.com/Glench/fuzzyset.js.git",
    "author":"Glen Chiacchieri (http://glench.com/)",
+   "contributors": [
+     {
+       "name": "Tucker Wash",
+       "email": "me@washt.xyz",
+       "url": "https://github.com/washt"
+     }
+   ],
    "main":"./index.js",
    "devDependencies":{
       "should":"*"

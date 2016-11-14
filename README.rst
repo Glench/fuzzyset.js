@@ -1,4 +1,5 @@
 =============================================
+*This is a fork of Glen Chiacchieri's [fuzzyset](http://Glench.github.com/fuzzyset.js) library - amended to fix memory leaks.*
 fuzzyset - A fuzzy string set for javascript.
 =============================================
 
