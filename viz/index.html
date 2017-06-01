@@ -265,7 +265,9 @@
                                 React.createElement('input', {value: fuzzyset.gramSizeUpper, size: 2}),
                                 React.createElement('span', null, '-grams'),
 
-                                React.createElement('button', {onClick: this.load_states}, 'load states'),
+                                React.createElement('br'),
+                                
+                                React.createElement('button', {onClick: this.load_states}, 'load example'),
                                 React.createElement('button', {onClick: this.clear_set}, 'reset'),
 
                                 React.createElement('input', {placeholder: 'lookup entry', onChange: this.lookupTextChange, value: this.state.lookupText, style: {display: 'block', marginTop: 10}}),
