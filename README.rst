@@ -31,7 +31,7 @@ Construction Arguments
 Methods
 -------
 
- - get(value, [default]): try to match a string to entries, otherwise return `null` or `default` if it is given.
+ - get(value, [default], [minScore=.33]): try to match a string to entries with a score of at least minScore (defaulted to .33), otherwise return `null` or `default` if it is given.
  - add(value): add a value to the set returning `false` if it is already in the set.
  - length(): return the number of items in the set.
  - isEmpty(): returns true if the set is empty.
