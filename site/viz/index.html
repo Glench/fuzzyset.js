@@ -230,7 +230,7 @@
 
                     toggle_levenshtein: function() {
                         fuzzyset.useLevenshtein = !fuzzyset.useLevenshtein;
-                        this.setState() // just tell react to update results
+                        this.forceUpdate() // just tell react to update results
                     },
 
                     highlightItem: function(evt) {
