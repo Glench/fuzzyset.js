@@ -221,10 +221,7 @@
                     },
 
                     load_states: function() {
-                        // fuzzyset = FuzzySet(states)
-                        fuzzyset = FuzzySet()
-                        states.forEach(state => { fuzzyset.add(state)})
-
+                        fuzzyset = FuzzySet(states)
                         this.setState({lookupText: ''})
                     },
 
@@ -255,13 +252,19 @@
                                 React.createElement('form', {onSubmit: this.addEntry},
                                     [
                                         React.createElement('input', {placeholder: 'add entry', onChange: this.entryTextChange, value: this.state.entryText}),
-                                        React.createElement('input', {type: 'checkbox', checked: fuzzyset.useLevenshtein, onChange: this.toggle_levenshtein}),
-                                        React.createElement('label', null, 'useLevenshtein'),
-                                        React.createElement('br'),
-                                        React.createElement('input', {value: fuzzyset.gramSizeLower, size: 2}, '-grams through '),
-                                        React.createElement('input', {value: fuzzyset.gramSizeUpper, size: 2}, '-grams'),
                                     ]
                                 ),
+
+                                React.createElement('input', {type: 'checkbox', checked: fuzzyset.useLevenshtein, onChange: this.toggle_levenshtein}),
+                                React.createElement('label', null, 'useLevenshtein'),
+
+                                React.createElement('br'),
+
+                                React.createElement('input', {value: fuzzyset.gramSizeLower, size: 2}),
+                                React.createElement('span', null, '-grams through '),
+                                React.createElement('input', {value: fuzzyset.gramSizeUpper, size: 2}),
+                                React.createElement('span', null, '-grams'),
+
                                 React.createElement('button', {onClick: this.load_states}, 'load states'),
                                 React.createElement('button', {onClick: this.clear_set}, 'reset'),
 
