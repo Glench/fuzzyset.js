@@ -35,12 +35,13 @@
             }
 
             tr.highlighted td:first-child:before, #lookupGrams tr td:first-child:before {
-                content: "•";
                 color: red;
-                margin-left: -14px;
-                margin-right: 6px;
+                margin-left: -10px;
+                margin-right: 12px;
             }
-
+            tr.highlighted.diamond td:first-child:before, #lookupGrams tr td:first-child:before {
+                content: "♦";
+            }
 
             h2 {
                 border-bottom: 1px solid black;
@@ -292,22 +293,30 @@
                                             React.createElement('h2', null, 'fuzzyset.matchDict'),
                                             React.createElement('table', null,
                                                 React.createElement('tbody', null,
-                                                _.map(fuzzyset.matchDict, (indexAndCount, gram) => {
-                                                    return React.createElement('tr', {className: gram in lookupGrams3 || gram in lookupGrams2 ? 'highlighted' : null, key: gram}, [
-                                                        React.createElement('td', {style: {textAlign: 'right'}}, gram.replace(' ', '_')),
-                                                        React.createElement('td', {style:{paddingLeft: 10}}, 
+                                                _.map(fuzzyset.matchDict, (indexAndCounts, gram) => {
+                                                    return indexAndCounts.map((indexAndCount, i) => {
+                                                        var first_cell = React.createElement('td', null, '   ');
+                                                        if (i == 0) {
+                                                            first_cell = React.createElement('td', {style: {textAlign: 'right'}}, gram.replace(' ', '_'));
+                                                        }
+                                                        return React.createElement('tr', {className: (gram in lookupGrams3 || gram in lookupGrams2 ? 'highlighted' : '') + (i == 0 ? ' diamond' : '')},
                                                             [
-                                                                React.createElement('span', null, '('),
-                                                                React.createElement('span', {onMouseEnter: this.highlightItem, onMouseLeave: this.dehighlightItem, className: 'mouseover', style: {padding: '0 2px'}, title: `This gram comes from item #${indexAndCount[0][0]} in fuzzyset.items[${gram.length}]: ${fuzzyset.items[gram.length][indexAndCount[0][0]]}`}, indexAndCount[0][0]),
-                                                                React.createElement('span', null, ','),
-                                                                React.createElement('span', {className: 'mouseover', style: {padding: '0 2px 0 4px'}, title: `The gram '${gram}' appears in '${fuzzyset.items[gram.length][indexAndCount[0][0]][1]}' ${indexAndCount[0][1]} time${indexAndCount[0][1] > 1 ? 's' : ''}.`}, indexAndCount[0][1]),
-                                                                React.createElement('span', null, ')'),
-                                                            ]   
+                                                            first_cell,
+                                                            React.createElement('td', {style:{paddingLeft: 10}}, 
+                                                                [
+                                                                    React.createElement('span', null, '('),
+                                                                    React.createElement('span', {onMouseEnter: this.highlightItem, onMouseLeave: this.dehighlightItem, className: 'mouseover', style: {padding: '0 2px'}, title: `This gram comes from item #${indexAndCount[0]} in fuzzyset.items[${gram.length}]: ${fuzzyset.items[gram.length][indexAndCount[0]]}`}, indexAndCount[0]),
+                                                                    React.createElement('span', null, ','),
+                                                                    React.createElement('span', {className: 'mouseover', style: {padding: '0 2px 0 4px'}, title: `The gram '${gram}' appears in '${fuzzyset.items[gram.length][indexAndCount[0]][1]}' ${indexAndCount[1]} time${indexAndCount[1] > 1 ? 's' : ''}.`}, indexAndCount[1]),
+                                                                    React.createElement('span', null, ')'),
+                                                                ]   
+                                                            )
+                                                            ]
                                                         )
-                                                        ]
-                                                    )
-                                                })
+                                                    }
                                                 )
+                                            })
+                                            )
                                             ) 
                                         ]
                                     ),
