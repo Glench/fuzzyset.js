@@ -132,7 +132,7 @@
         <script type="text/javascript">
             $(document).on("ready", function(evt) {
                 fuzzyset = FuzzySet([
-                    'glen'
+                    'Glen Chiacchieri'
                 ]);
 
 
@@ -198,7 +198,7 @@
                     getInitialState: function() {
                         return {
                             entryText: '',
-                            lookupText: 'glen',
+                            lookupText: 'glen c',
                             highlightedItemIndex: null,
                         }
                     },
@@ -298,7 +298,7 @@
                                                         React.createElement('td', {style:{paddingLeft: 10}}, 
                                                             [
                                                                 React.createElement('span', null, '('),
-                                                                React.createElement('span', {onMouseEnter: this.highlightItem, onMouseLeave: this.dehighlightItem, className: 'mouseover', style: {padding: '0 2px'}, title: `Item #${indexAndCount[0][0]} in fuzzyset.items[${gram.length}]: ${fuzzyset.items[gram.length][indexAndCount[0][0]]}`}, indexAndCount[0][0]),
+                                                                React.createElement('span', {onMouseEnter: this.highlightItem, onMouseLeave: this.dehighlightItem, className: 'mouseover', style: {padding: '0 2px'}, title: `This gram comes from item #${indexAndCount[0][0]} in fuzzyset.items[${gram.length}]: ${fuzzyset.items[gram.length][indexAndCount[0][0]]}`}, indexAndCount[0][0]),
                                                                 React.createElement('span', null, ','),
                                                                 React.createElement('span', {className: 'mouseover', style: {padding: '0 2px 0 4px'}, title: `The gram '${gram}' appears in '${fuzzyset.items[gram.length][indexAndCount[0][0]][1]}' ${indexAndCount[0][1]} time${indexAndCount[0][1] > 1 ? 's' : ''}.`}, indexAndCount[0][1]),
                                                                 React.createElement('span', null, ')'),
