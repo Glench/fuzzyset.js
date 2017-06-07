@@ -15,49 +15,71 @@
                 border-spacing: none;
             }
             p {
-                margin: 0;
+                margin: 0 0 10px 0;
             }
-            td {
+            td, th {
                 vertical-align: top;
                 font-family: "Lucida Console", monospace;
                 padding: 2px;
             }
+            #items th {
+                /*font-weight: normal;*/
+                text-align: left;
 
-            #visualizations div {
-                display: inline-block;
-                float: left;
-                margin: 10px;
+                padding: 20px 0 10px 0;
             }
 
-            tr.highlighted td, #lookupGrams td {
+            section {
+                clear: both;
+            }
+
+            #state {
+                margin-top: 100px;
+            }
+
+            div {
+                display: inline-block;
+                float: left;
+                margin: 10px 30px 10px 0;
+            }
+
+            tr.highlighted td, #lookupGrams2 td, #lookupGrams3 td {
                 font-weight: bold;
-                color: red;
+                padding-right: 10px;
+                background-color: yellow;
+                border-bottom: 3px solid white;
             }
 
             tr.highlighted td:first-child:before, #lookupGrams tr td:first-child:before {
-                color: red;
-                margin-left: -10px;
-                margin-right: 12px;
-            }
-            tr.highlighted.diamond td:first-child:before, #lookupGrams tr td:first-child:before {
-                content: "♦";
+                font-weight: bold;
+                background-color: yellow;
             }
 
             h2 {
+                font-size: 22px;
+                border-bottom: 3px solid black;
+                padding-bottom: 3px;
+            }
+            h3 {
                 border-bottom: 1px solid black;
                 padding-bottom: 4px;
+                margin-top: 0;
             }
 
-            .mouseover:hover {
-                text-decoration: underline;
+            .mouseover:hover, #items .mouseover {
                 cursor: default;
+                background-color: black;
+                color: white;
             }
+
         </style>
         <!-- <link href="" rel="stylesheet"> -->
     </head>
     <body>
         <h1><a href="http://glench.github.io/fuzzyset.js/">Fuzzyset.js</a> debugger</h1>
         <p>A simple interface for helping understand what fuzzyset.js is doing.</p>
+
+        <p><b>TODO:</b> should figure out how to show cosine similarity process before tuesday meeting, highlight fuzzyset.items on hover, make grams counter work</p>
 
         <div id="container"></div>
 
@@ -200,7 +222,8 @@
                         return {
                             entryText: '',
                             lookupText: 'glen c',
-                            highlightedItemIndex: null,
+                            highlightedItemIndex: -1,
+                            highlightedGramSize: '0',
                         }
                     },
 
@@ -221,6 +244,7 @@
                     clear_set: function() {
                         fuzzyset = FuzzySet();
                         this.setState({lookupText: ''});
+                        $('form input').focus();
                     },
 
                     load_states: function() {
@@ -234,80 +258,103 @@
                     },
 
                     highlightItem: function(evt) {
-                        this.setState({highlightedItemIndex: evt.target.innerText});
-                        console.log('hi')
+                        this.setState({
+                            highlightedGramSize: evt.target.getAttribute('data-gram-size'),
+                            highlightedItemIndex: parseInt(evt.target.getAttribute('data-item-index'), 10),
+                        });
                     },
 
                     dehighlightItem: function() {
-                        this.setState({highlightedItemIndex: null});
-                        console.log('bye')
+                        this.setState({
+                            highlightedGramSize: '0',
+                            highlightedItemIndex: -1,
+                        });
                     },
 
                     render: function() {
-                        // QUESTION: why does 'vir' only have one entry? should have reverse indexes for virginia, virgin islands, west virginia.
-
-
                         var lookupGrams3 = _gramCounter(this.state.lookupText, 3);
                         var lookupGrams2 = _gramCounter(this.state.lookupText, 2);
 
+
+
                         return React.createElement('div', {id: 'app'},
                             [
-                                React.createElement('form', {onSubmit: this.addEntry},
+                                React.createElement('section', {id: 'lookup'},
                                     [
-                                        React.createElement('input', {placeholder: 'add entry', onChange: this.entryTextChange, value: this.state.entryText}),
+                                        React.createElement('h2', null, 'Lookup'),
+                                        React.createElement('div', {style: {float: 'left'}}, [
+                                            React.createElement('label', null, 'Query: '),
+                                            React.createElement('input', {placeholder: 'lookup entry', onChange: this.lookupTextChange, value: this.state.lookupText, style: {}, type: 'search'}),
+
+                                            React.createElement('br'),
+
+                                            React.createElement('input', {type: 'checkbox', checked: fuzzyset.useLevenshtein, onChange: this.toggle_levenshtein, id: 'useLevenshtein', style: {marginTop: 10}}),
+                                            React.createElement('label', {htmlFor: 'useLevenshtein'}, 'useLevenshtein'),
+                                        ]),
+                                        React.createElement('div', {id: 'lookupResults'}, [
+                                                React.createElement('h3', null, 'fuzzyset.get(\''+ this.state.lookupText +'\')'),
+                                                React.createElement(Table, {obj: fuzzyset.get(this.state.lookupText)})
+                                            ]
+                                        ),
+                                        React.createElement('div', {id: 'lookupGrams2'}, [
+                                                React.createElement('h3', null, '_gramCounter(\''+ this.state.lookupText +'\', 2)'),
+                                                React.createElement(Table, {obj: lookupGrams2}),
+                                            ]
+                                        ),
+                                        React.createElement('div', {id: 'lookupGrams3'}, [
+                                                React.createElement('h3', null, '_gramCounter(\''+ this.state.lookupText +'\', 3)'),
+                                                React.createElement(Table, {obj: lookupGrams3})
+                                            ]
+                                        ),
+
                                     ]
                                 ),
 
-                                React.createElement('input', {type: 'checkbox', checked: fuzzyset.useLevenshtein, onChange: this.toggle_levenshtein}),
-                                React.createElement('label', null, 'useLevenshtein'),
 
-                                React.createElement('br'),
-
-                                React.createElement('input', {value: fuzzyset.gramSizeLower, size: 2}),
-                                React.createElement('span', null, '-grams through '),
-                                React.createElement('input', {value: fuzzyset.gramSizeUpper, size: 2}),
-                                React.createElement('span', null, '-grams'),
-
-                                React.createElement('br'),
-                                
-                                React.createElement('button', {onClick: this.load_states}, 'load example'),
-                                React.createElement('button', {onClick: this.clear_set}, 'reset'),
-
-                                React.createElement('input', {placeholder: 'lookup entry', onChange: this.lookupTextChange, value: this.state.lookupText, style: {display: 'block', marginTop: 10}}),
+                                React.createElement('section', {id: 'state'}, [
+                                    React.createElement('h2', null, 'State'),
+                                    React.createElement('div', {style: {float: 'none', display: 'block'}}, [
+                                        React.createElement('form', {onSubmit: this.addEntry},
+                                            [
+                                                React.createElement('input', {placeholder: 'add entry', id: 'add', onChange: this.entryTextChange, value: this.state.entryText, style:{fontSize: 18}}),
+                                                React.createElement('span', {style: {marginLeft: 6}}, 'type and press enter to add an entry: fuzzyset.add(\''+ this.state.entryText +'\')'),
+                                            ]
+                                        ),
 
 
-                                React.createElement('div', {id: 'visualizations'}, [
-                                    React.createElement('div', {id: 'exactSet'}, [
-                                        React.createElement('h2', null, 'fuzzyset.exactSet'),
-                                        _.map(fuzzyset.exactSet, entry => {
-                                            return React.createElement('p', null, entry)
-                                        })
-                                        ]
-                                    ),
-                                    React.createElement('div', {id: 'items'}, [
-                                            React.createElement('h2', null, 'fuzzyset.items'),
-                                            React.createElement(Table, {obj: fuzzyset.items})
-                                        ]
-                                    ),
+                                        React.createElement('input', {value: fuzzyset.gramSizeUpper, size: 2, style: {marginTop: 10}}),
+                                        React.createElement('span', null, '-grams to '),
+                                        React.createElement('input', {value: fuzzyset.gramSizeLower, size: 2}),
+                                        React.createElement('span', null, '-grams'),
+
+                                        React.createElement('div', {style: {float: 'none', display: 'block'}}, [
+                                            React.createElement('button', {onClick: this.load_states, style: {marginRight: 10}}, 'load US state names'),
+                                            React.createElement('button', {onClick: this.clear_set, style: {}}, 'reset'),
+                                        ]),
+                                    ]),
+
+
+
                                     React.createElement('div', {id: 'matchDict'}, [
-                                            React.createElement('h2', null, 'fuzzyset.matchDict'),
+                                            React.createElement('h3', null, 'fuzzyset.matchDict'),
+                                            React.createElement('p', {style: {width: 200, lineHeight: 1.3}}, 'Hover over each number to see a description of what that number means.'),
                                             React.createElement('table', null,
                                                 React.createElement('tbody', null,
                                                 _.map(fuzzyset.matchDict, (indexAndCounts, gram) => {
                                                     return indexAndCounts.map((indexAndCount, i) => {
-                                                        var first_cell = React.createElement('td', null, '   ');
+                                                        var first_cell = React.createElement('td', {key: i+gram+1}, '   ');
                                                         if (i == 0) {
-                                                            first_cell = React.createElement('td', {style: {textAlign: 'right'}}, gram.replace(' ', '_'));
+                                                            first_cell = React.createElement('td', {key: i+gram+1, style: {textAlign: 'right'}}, gram.replace(' ', '_'));
                                                         }
-                                                        return React.createElement('tr', {className: (gram in lookupGrams3 || gram in lookupGrams2 ? 'highlighted' : '') + (i == 0 ? ' diamond' : '')},
+                                                        return React.createElement('tr', {className: (gram in lookupGrams3 || gram in lookupGrams2 ? 'highlighted' : ''), key: i+gram+indexAndCount},
                                                             [
                                                             first_cell,
-                                                            React.createElement('td', {style:{paddingLeft: 10}}, 
+                                                            React.createElement('td', {key: i+gram+2, style:{paddingLeft: 10}}, 
                                                                 [
                                                                     React.createElement('span', null, '('),
-                                                                    React.createElement('span', {onMouseEnter: this.highlightItem, onMouseLeave: this.dehighlightItem, className: 'mouseover', style: {padding: '0 2px'}, title: `This gram comes from item #${indexAndCount[0]} in fuzzyset.items[${gram.length}]: ${fuzzyset.items[gram.length][indexAndCount[0]]}`}, indexAndCount[0]),
+                                                                    React.createElement('span', {onMouseEnter: this.highlightItem, onMouseLeave: this.dehighlightItem, className: 'mouseover', style: {padding: '0 2px'}, title: `The gram '${gram}' comes from item #${indexAndCount[0]} in fuzzyset.items[${gram.length}]: ${fuzzyset.items[gram.length][indexAndCount[0]]}`, key: i+'index'+indexAndCount[0], 'data-gram-size': gram.length, 'data-item-index': indexAndCount[0]}, indexAndCount[0]),
                                                                     React.createElement('span', null, ','),
-                                                                    React.createElement('span', {className: 'mouseover', style: {padding: '0 2px 0 4px'}, title: `The gram '${gram}' appears in '${fuzzyset.items[gram.length][indexAndCount[0]][1]}' ${indexAndCount[1]} time${indexAndCount[1] > 1 ? 's' : ''}.`}, indexAndCount[1]),
+                                                                    React.createElement('span', {className: 'mouseover', style: {padding: '0 2px 0 4px'}, title: `The gram '${gram}' appears in '${fuzzyset.items[gram.length][indexAndCount[0]][1]}' ${indexAndCount[1]} time${indexAndCount[1] > 1 ? 's' : ''}.`, key: i+'count'+indexAndCount[1]}, indexAndCount[1]),
                                                                     React.createElement('span', null, ')'),
                                                                 ]   
                                                             )
@@ -320,16 +367,33 @@
                                             ) 
                                         ]
                                     ),
-                                    React.createElement('div', {id: 'lookupResults'}, [
-                                            React.createElement('h2', null, 'fuzzyset.get(\''+ this.state.lookupText +'\')'),
-                                            React.createElement(Table, {obj: fuzzyset.get(this.state.lookupText)})
+                                    React.createElement('div', {id: 'items'}, [
+                                            React.createElement('h3', null, 'fuzzyset.items'),
+                                            React.createElement('table', null, React.createElement('tbody', null,
+                                                _.map(fuzzyset.items, (pairs, gramSize) => {
+                                                    return [
+                                                        React.createElement('tr', null, [
+                                                            React.createElement('th', null, gramSize+'-grams: '),
+                                                            React.createElement('td', null),
+                                                        ]),
+                                                        _.map(pairs, (pair, i) => {
+                                                            return React.createElement('tr', {className: this.state.highlightedItemIndex == i && this.state.highlightedGramSize == gramSize ? 'mouseover' : ''}, [
+                                                                React.createElement('td', null, '('+pair[0]+','),
+                                                                React.createElement('td', {style: {paddingLeft: 8}}, pair[1]+')'),
+                                                            ]);
+                                                        }),
+                                                    ]
+                                                })
+
+                                            )),
                                         ]
                                     ),
-                                    React.createElement('div', {id: 'lookupGrams'}, [
-                                            React.createElement('h2', null, '_gramCounter(\''+ this.state.lookupText +'\', 2)'),
-                                            React.createElement(Table, {obj: lookupGrams2}),
-                                            React.createElement('h2', null, '_gramCounter(\''+ this.state.lookupText +'\', 3)'),
-                                            React.createElement(Table, {obj: lookupGrams3})
+                                    React.createElement('div', {id: 'exactSet'}, [
+                                        React.createElement('h3', null, 'fuzzyset.exactSet'),
+                                        React.createElement(Table, {obj: fuzzyset.exactSet})
+                                        // _.map(fuzzyset.exactSet, entry => {
+                                        //     return React.createElement('p', null, entry)
+                                        // })
                                         ]
                                     ),
                                 ])
