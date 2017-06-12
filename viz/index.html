@@ -72,14 +72,33 @@
                 color: white;
             }
 
+            .fuzzyset-items-highlightedgram {
+                color: white;
+                background-color: black;
+            }
+
+            .sqrt {
+                width: 220px;
+                line-height: 1.5;
+                display: inline-block;
+                margin-top: 5px;
+                padding-top: 5px;
+                border-top: 1px solid #ccc;
+            }
+
+            .notReturned {
+                color: #999;
+                text-decoration: line-through;
+            }
+
         </style>
         <!-- <link href="" rel="stylesheet"> -->
     </head>
     <body>
         <h1><a href="http://glench.github.io/fuzzyset.js/">Fuzzyset.js</a> debugger</h1>
-        <p>A simple interface for helping understand what fuzzyset.js is doing.</p>
+        <p>An interface for helping understand what the fuzzyset.js code library is doing internally.</p>
 
-        <p><b>TODO:</b> should figure out how to show cosine similarity process before tuesday meeting, highlight fuzzyset.items on hover, make grams counter work</p>
+        <p><b>TODO:</b> should figure out how to show cosine similarity process before tuesday meeting, make grams counter work</p>
 
         <div id="container"></div>
 
@@ -224,6 +243,7 @@
                             lookupText: 'glen c',
                             highlightedItemIndex: -1,
                             highlightedGramSize: '0',
+                            highlightedGram: null,
                         }
                     },
 
@@ -271,10 +291,25 @@
                         });
                     },
 
+                    highlightGram: function(evt) {
+                        this.setState({
+                            highlightedGram: evt.target.getAttribute('data-gram'),
+                            highlightedItemIndex: parseInt(evt.target.getAttribute('data-item-index'), 10),
+                        })
+                    },
+
+                    dehighlightGram: function(evt) {
+                        this.setState({
+                            highlightedGram: null,
+                            highlightedItemIndex: -1,
+                        })
+                    },
+
                     render: function() {
                         var lookupGrams3 = _gramCounter(this.state.lookupText, 3);
                         var lookupGrams2 = _gramCounter(this.state.lookupText, 2);
 
+                        fuzzyset.get(this.state.lookupText)
 
 
                         return React.createElement('div', {id: 'app'},
@@ -292,18 +327,26 @@
                                             React.createElement('label', {htmlFor: 'useLevenshtein'}, 'useLevenshtein'),
                                         ]),
                                         React.createElement('div', {id: 'lookupResults'}, [
-                                                React.createElement('h3', null, 'fuzzyset.get(\''+ this.state.lookupText +'\')'),
-                                                React.createElement(Table, {obj: fuzzyset.get(this.state.lookupText)})
+                                                React.createElement('h3', null, 'fuzzyset.get(\''+ this.state.lookupText +'\', minScore=.33)'),
+                                                // React.createElement(Table, {obj: fuzzyset.get(this.state.lookupText)})
+                                                React.createElement('div', null, _.map(fuzzyset.debug_results, result => {
+                                                    return React.createElement('p', {className: result[0] > .33 ? 'returned' : 'notReturned'}, `(${result[0]}, ${result[1]})`)
+                                                }))
+                                                // React.createElement(Table, {obj: fuzzyset.debug_results})
+                                            ]
+                                        ),
+                                        React.createElement('div', {id: 'lookupGrams3'}, [
+                                                React.createElement('h3', null, '_gramCounter(\''+ this.state.lookupText +'\', 3)'),
+                                                React.createElement(Table, {obj: lookupGrams3}),
+                                                React.createElement('span', {className: "sqrt"}, 'sqrt(', _.map(lookupGrams3, value => value+'² + '), '0) = ',
+                                                    Math.sqrt(_.reduce(_.map(lookupGrams3, count => Math.pow(count, 2)), (memo, num) => memo+num, 0)))
                                             ]
                                         ),
                                         React.createElement('div', {id: 'lookupGrams2'}, [
                                                 React.createElement('h3', null, '_gramCounter(\''+ this.state.lookupText +'\', 2)'),
                                                 React.createElement(Table, {obj: lookupGrams2}),
-                                            ]
-                                        ),
-                                        React.createElement('div', {id: 'lookupGrams3'}, [
-                                                React.createElement('h3', null, '_gramCounter(\''+ this.state.lookupText +'\', 3)'),
-                                                React.createElement(Table, {obj: lookupGrams3})
+                                                React.createElement('span', {className: 'sqrt'}, 'sqrt(', _.map(lookupGrams2, value => value+'² + '), '0) = ',
+                                                    Math.sqrt(_.reduce(_.map(lookupGrams2, count => Math.pow(count, 2)), (memo, num) => memo+num, 0)))
                                             ]
                                         ),
 
@@ -322,9 +365,9 @@
                                         ),
 
 
-                                        React.createElement('input', {value: fuzzyset.gramSizeUpper, size: 2, style: {marginTop: 10}}),
+                                        React.createElement('input', {value: fuzzyset.gramSizeUpper, readOnly: true, size: 2, style: {marginTop: 10}}),
                                         React.createElement('span', null, '-grams to '),
-                                        React.createElement('input', {value: fuzzyset.gramSizeLower, size: 2}),
+                                        React.createElement('input', {value: fuzzyset.gramSizeLower, readOnly: true, size: 2}),
                                         React.createElement('span', null, '-grams'),
 
                                         React.createElement('div', {style: {float: 'none', display: 'block'}}, [
@@ -354,7 +397,13 @@
                                                                     React.createElement('span', null, '('),
                                                                     React.createElement('span', {onMouseEnter: this.highlightItem, onMouseLeave: this.dehighlightItem, className: 'mouseover', style: {padding: '0 2px'}, title: `The gram '${gram}' comes from item #${indexAndCount[0]} in fuzzyset.items[${gram.length}]: ${fuzzyset.items[gram.length][indexAndCount[0]]}`, key: i+'index'+indexAndCount[0], 'data-gram-size': gram.length, 'data-item-index': indexAndCount[0]}, indexAndCount[0]),
                                                                     React.createElement('span', null, ','),
-                                                                    React.createElement('span', {className: 'mouseover', style: {padding: '0 2px 0 4px'}, title: `The gram '${gram}' appears in '${fuzzyset.items[gram.length][indexAndCount[0]][1]}' ${indexAndCount[1]} time${indexAndCount[1] > 1 ? 's' : ''}.`, key: i+'count'+indexAndCount[1]}, indexAndCount[1]),
+                                                                    React.createElement('span', {
+                                                                        className: 'mouseover',
+                                                                        onMouseEnter: this.highlightGram,
+                                                                        onMouseLeave: this.dehighlightGram,
+                                                                        'data-gram': gram,
+                                                                        'data-item-index': indexAndCount[0],
+                                                                        style: {padding: '0 2px 0 4px'}, title: `The gram '${gram}' appears in '${fuzzyset.items[gram.length][indexAndCount[0]][1]}' ${indexAndCount[1]} time${indexAndCount[1] > 1 ? 's' : ''}.`, key: i+'count'+indexAndCount[1]}, indexAndCount[1]),
                                                                     React.createElement('span', null, ')'),
                                                                 ]   
                                                             )
@@ -377,9 +426,28 @@
                                                             React.createElement('td', null),
                                                         ]),
                                                         _.map(pairs, (pair, i) => {
+                                                            var split_pair = [];
+                                                            if (this.state.highlightedGram && this.state.highlightedItemIndex === i) {
+                                                                var split_regex = new RegExp(this.state.highlightedGram.replace(/^-/, '^').replace(/-$/, '$'))
+
+                                                                if (split_regex.test(pair[1])) {
+                                                                    split_pair = pair[1].split(split_regex)
+                                                                    console.log('before', split_pair)
+                                                                    split_pair.forEach((substring, index) => {
+                                                                        if (index % 2 == 0) {
+                                                                            split_pair.splice(index+1, 0, React.createElement('span', {className: 'fuzzyset-items-highlightedgram'}, this.state.highlightedGram))
+                                                                        }
+                                                                    })
+                                                                    console.log(this.state.highlightedGram, 'after', split_pair)
+                                                                }
+                                                            } else {
+                                                                split_pair.push(pair[1])
+                                                            }
+                                                            split_pair.push(')');
                                                             return React.createElement('tr', {className: this.state.highlightedItemIndex == i && this.state.highlightedGramSize == gramSize ? 'mouseover' : ''}, [
+                                                                React.createElement('td', null, `#${i}`),
                                                                 React.createElement('td', null, '('+pair[0]+','),
-                                                                React.createElement('td', {style: {paddingLeft: 8}}, pair[1]+')'),
+                                                                React.createElement('td', {style: {paddingLeft: 8}}, split_pair),
                                                             ]);
                                                         }),
                                                     ]
