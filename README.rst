@@ -40,6 +40,11 @@ Methods
 Theory of operation
 -------------------
 
+Play with an interactive debugging interface for the library `here`__:
+
+__ http://glench.github.io/fuzzyset.js/viz/
+.. image:: http://gallery.tinyletterapp.com/99afc5bd8aa788ae26037984e2d46fa0400db41f/images/aadc9b4a-d02f-4a96-89e5-6887e6820622.png
+
 Adding to the data structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
