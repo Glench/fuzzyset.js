@@ -26,8 +26,12 @@
     }
     .fuzzyset-wide {
       margin: 30px -20px 50px -20px;
-      padding: 0 20px !important;
+      padding: 0 20px;
       box-shadow: 0 0 10px rgba(0,0,0, .3);
+    }
+    .fuzzyset-wide > h3 {
+      margin-top: 0;
+      font-size: 22px !important;
     }
     .fuzzyset-math p {
       margin-bottom: 5px !important;
@@ -78,7 +82,7 @@
   <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="GitHub">
 
     
-    <meta property="og:image" content="https://avatars0.githubusercontent.com/u/451461?s=400&amp;v=4"><meta property="og:site_name" content="Fuzzyset"><meta property="og:type" content="object"><meta property="og:title" content="How Fuzzyset Works"><meta property="og:url" content="http://glench.github.io/fuzzyset.js/ui/"><meta property="og:description" content="A human-readable visualization of a code library.">
+    <meta property="og:image" content="https://avatars0.githubusercontent.com/u/451461?s=400&amp;v=4"><meta property="og:site_name" content="Fuzzyset"><meta property="og:type" content="object"><meta property="og:title" content="How Fuzzyset Works"><meta property="og:url" content="http://glench.github.io/fuzzyset.js/ui/"><meta property="og:description" content="A human-readable interactive representation of a code library.">
 
   <link rel="assets" href="https://assets-cdn.github.com/">
   
@@ -122,7 +126,6 @@
 
   <meta name="u2f-support" content="true">
 
-  <!-- TODO: install mathjax locally -->
   <script type="text/javascript" async
   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
@@ -146,7 +149,7 @@
           <li>shows the high-level structure of the library, and</li>
           <li>demonstrates some of the low-level data operations with <b>interactive illustrated examples and live code editing</b>.</li>
         </ul>
-        <p> All these features are important, but the interactive features seem particularly helpful in sharpening readers' mental models of a complex system and are rarely supported in code libraries.</p>
+        <p> All these features are important, but the interactive features seem particularly helpful in sharpening readers' mental models of a complex system and are rarely supported in typical documentation.</p>
 
         <p>This document is just one example of a representation of a program, a research project hand-crafted to give it the best possible chance of successfully facilitating understanding. My hope is that this example of a well-explained system will provide clues about how to better represent programs with the possibility that these sorts of human-understandable artifacts can be created automatically as a by-product of authoring programs, or even <em>become the way that programs are created</em>.</p>
 
@@ -749,7 +752,7 @@
         <h1>What it does</h1>
 
           <p>Fuzzyset.js creates a data structure to efficiently compute similarity scores in order to find likely misspellings in user input.</p>
-          <p> For example, if someone types <b>"mossisippi"</b> in a U.S. state input box, we would use this library to infer that they probably meant <b>"Mississippi"</b>. Here's an interactive example:</p>
+          <p> For example, if someone types <b>"mossisippi"</b> in a U.S. state input box, we would use this library to infer that they probably meant <b>"Mississippi"</b>. Here's a simple interactive example:</p>
 
           <div class="fuzzyset-wide">
             <div id="fuzzyset-starting-example">
@@ -767,7 +770,7 @@
             <li>Looking up Matches</li>
           </ol>
 
-        <h2>Calculating Similarity Between Two Strings Using Cosine Similarity</h2>
+        <h1>Calculating Similarity Scores</h1>
 
           <p>First, how do we know how similar two strings are? In this case, we can compute a "similarity score" from 0 (not similar at all) to 1 (completely similar, the same string).</p>
 
@@ -777,8 +780,7 @@
             To turn a string into numeric vector, we use the <code>_gramCounter</code> function which counts the character substrings ("grams") in a given string:
           </p>
 
-          <script id="gramCounter">
-var _nonWordRe = /[^a-zA-Z0-9\u00C0-\u00FF, ]+/g;
+          <script id="gramCounter">var _nonWordRe = /[^a-zA-Z0-9\u00C0-\u00FF, ]+/g;
 var _iterateGrams = function(value, gramSize) {
     gramSize = gramSize || 2;
     var simplified = '-' + value.toLowerCase().replace(_nonWordRe, '') + '-',
@@ -827,7 +829,7 @@ var _gramCounter = function(value, gramSize) {
             <p>and \(\left\lVert A \right\rVert\) is the vector magnitude of \(A\).</p>
           </div>
 
-          <p style="margin: 30px 0;">To calculate the dot product, \(A \cdot B\), we just multiply the elements of each vector together and add them up:</p>
+          <p style="margin: 30px 0;">To calculate the dot product, \(A \cdot B\), we just multiply the parts of each vector together and add them up:</p>
 
           <div id="fuzzyset-cosinesimilarity">
             Uh oh, there was an error. Do you have JavaScript enabled?
@@ -835,16 +837,15 @@ var _gramCounter = function(value, gramSize) {
 
           <p>And that is how Fuzzyset.js calculates a similarity score for two strings.</p>
 
-          <h2>Storing the Dictionary</h2>
+          <h1>Storing the Dictionary</h1>
 
-          <p>We want to use the algorithm described above to match a dictionary of strings to user input. To store strings efficiently so they can compared with cosine similarity, we use the following strategy:</p>
+          <p>We want to use the algorithm described above to match a dictionary of strings to user input. To store strings efficiently so they can be compared with cosine similarity, we use the following strategy:</p>
 
           <p style="text-align: center;"><img src="storage.png" alt="Annotated cosine similarity equation showing the storage of the vector parts in fuzzyset.matchDict and the vector magnitude in fuzzyset.items." /><small style="display: block;">(\(A \cdot B\) and \(\left\lVert A \right\rVert\) will be calculated on-the-fly when looking up matches.)</small></p>
 
           <p>Here's what that looks like in practice:</p>
 
-          <script id="fuzzyset-add">
-fuzzyset = {gramSizeLower: 2, gramSizeUpper: 3, matchDict: {}, items: {}, exactSet: {}};
+          <script id="fuzzyset-add">fuzzyset = {gramSizeLower: 2, gramSizeUpper: 2, matchDict: {}, items: {}, exactSet: {}};
 
 fuzzyset.add = function(value) {
     var normalizedValue = this._normalizeStr(value);
@@ -888,7 +889,7 @@ fuzzyset._normalizeStr = function(str) {
 };
           </script>
           <div class="fuzzyset-wide" style="display: grid; grid-template-columns: 1fr;">
-            <h3>How Fuzzyset stores strings</h3>
+            <h3 style="margin-bottom: 0;">How Fuzzyset stores strings</h3>
             <div id="fuzzyset-storage">
               Uh oh, there was an error. Do you have JavaScript enabled?
             </div>
@@ -945,21 +946,25 @@ fuzzyset._normalizeStr = function(str) {
               </table>
             </div>
 
-            <div style="margin-right: auto;">
-              <h4><code>fuzzyset.exactSet</code></h4>
-            </div>
           </div>
 
 
 
-          <h2>Looking Up Matches</h2>
+          <h1>Looking Up Matches</h1>
 
-          <h1>TODO (production notes</h1>
+          <p>The general flow for looking up matches is <code>fuzzyset.matchDict</code> <code>fuzzyset.items</code> <code>fuzzyset.exactSet</code></p>
+
+          <h1>TODO (production notes)</h1>
 
           <ul>
-            <li>get mathjax to work locally</li>
             <li>add code editing</li>
             <li>figure out how to center things within grid</li>
+            <li>get mathjax to work locally</li>
+            <li>design "looking up" section</li>
+            <li>Get "store strings" example links working</li>
+            <li>get "x" button working on "store strings" example</li>
+            <li>fix titles of table headers on "store strings" example</li>
+            <li>Add dynamic highlighting/scrolling/captions to "store strings" example?</li>
           </ul>
 
           <p>before publishing: </p>
@@ -967,6 +972,16 @@ fuzzyset._normalizeStr = function(str) {
             <li>switch react to production</li>
             <li>add link to newsletter post</li>
           </ul>
+
+          <p>after publishing: </p>
+          <ul>
+            <li>post on newsletter</li>
+            <li>post on twitter</li>
+            <li>post on explorables slack</li>
+            <li>post on facebook</li>
+            <li>post on hacker news</li>
+          </ul>
+
       </article>
   </div>
 
@@ -1071,6 +1086,7 @@ var Vector = React.createClass({
         ])
     );
     var firstIndexNotOne = null;
+    var firstIndexNotOneForSpaceCharacter = null;
     Object.entries(this.props.vector).forEach((pair, i) => {
       var gram = pair[0];
       var count = pair[1];
@@ -1079,9 +1095,13 @@ var Vector = React.createClass({
         firstIndexNotOne = i;
         parenthesis = React.createElement('td', {key: '${gram}-${count}-${this.props.value}-description'}, React.createElement('small', null, `The gram '${gram}' occurs ${count} times in '${this.props.value}'`));
       }
+      if (!parenthesis && firstIndexNotOneForSpaceCharacter === null && gram.indexOf(' ') > -1) {
+        firstIndexNotOneForSpaceCharacter = i;
+        parenthesis = React.createElement('td', {key: 'parenthesis'}, React.createElement('small', null, 'Spaces are shown as the _ (underscore) character in this UI, but are stored as spaces.'))
+      }
       rows.push(
         React.createElement('tr', {key: `${gram}-${count}`}, [
-          React.createElement('td', {key: gram}, gram),
+          React.createElement('td', {key: gram}, gram.replace(' ', '_')),
           React.createElement('td', {key: count}, count),
           parenthesis
         ])
@@ -1140,7 +1160,7 @@ var ConvertToVector = React.createClass({
                 React.createElement('td', {key: 'output-value'}, React.createElement(Vector, {value: this.state.value, vector: _gramCounter(this.state.value, this.state.gramSize)})),
               ]),
               React.createElement('tr', {key: 'paren'}, 
-                React.createElement('td', {colSpan: 2}, React.createElement('small', null, '(We use -dashes- to mark the beginning and end of words because these are more likely to be correct in misspellings.)')),
+                React.createElement('td', {colSpan: 2}, React.createElement('small', null, '(We use -dashes- to mark the beginning and end of words because these are more likely to be correct in misspellings. Also, we normalize the string by converting to lowercase and removing non-alphanumeric characters.)')),
               ),
             ])
           ),
@@ -1197,7 +1217,7 @@ var Magnitude = React.createClass({
       React.createElement('td', {key: 'sqrtsum-sum', style: {backgroundColor: 'yellow', fontWeight: 'bold'}}, sqrt == Math.floor(sqrt) ? sqrt : sqrt.toFixed(3)),
     ]))
 
-    return React.createElement('table', {style: {margin: '40px 0'}}, React.createElement('tbody', null, rows));
+    return React.createElement('table', null, React.createElement('tbody', null, rows));
   }
 });
 
@@ -1294,7 +1314,7 @@ var CosineSimilarity = React.createClass({
         React.createElement('td', {key: 'input', colSpan: 2},
           React.createElement('input', {value: this.state.A, onChange: this.changeA})
         ),
-        React.createElement('tr', {key: ' '}, ' '),
+        React.createElement('td', {key: ' '}, ' '),
         React.createElement('td', {key: 'input2', colSpan: 2},
           React.createElement('input', {value: this.state.B, onChange: this.changeB})
         ),
@@ -1314,10 +1334,10 @@ var CosineSimilarity = React.createClass({
       var mult = (Agrams[gram] || 0) * (Bgrams[gram] || 0);
       sum += mult; // stateful thing!
       var row = React.createElement('tr', {key: gram+'-row'}, [
-        React.createElement('td', {key: gram, className: shouldUnhighlightA ? 'unhighlight' : ''}, gram),
+        React.createElement('td', {key: gram, className: shouldUnhighlightA ? 'unhighlight' : ''}, gram.replace(' ', '_')),
         React.createElement('td', {key: gram+'A'+Agrams[gram], className: shouldUnhighlightA ? 'unhighlight': ''}, Agrams[gram] || 0),
         React.createElement('td', {key: gram+'x'}, '×'),
-        React.createElement('td', {key: gram+2, className: shouldUnhighlightB ? 'unhighlight' : ''}, gram),
+        React.createElement('td', {key: gram+2, className: shouldUnhighlightB ? 'unhighlight' : ''}, gram.replace(' ', '_')),
         React.createElement('td', {key: gram+'B'+Bgrams[gram], className: shouldUnhighlightB ? 'unhighlight' : ''}, Bgrams[gram] || 0),
         React.createElement('td', {key: gram+'='}, '='),
         React.createElement('td', {key: gram+'sum', className: shouldUnhighlightA || shouldUnhighlightB ? 'unhighlight' : ''}, mult),
@@ -1331,17 +1351,23 @@ var CosineSimilarity = React.createClass({
     ]))
 
     return React.createElement('div', null, [
-      React.createElement('div', {className: 'fuzzyset-wide', style: {overflow: 'auto', maxHeight: 716}},
-        React.createElement('table', {style: {padding: '40px 0', margin: '0 auto', width: 600}}, React.createElement('tbody', null, rows))),
+      React.createElement('div', {className: 'fuzzyset-wide', style: {overflow: 'auto', maxHeight: 716}}, [
+        React.createElement('h3', {key: 'header'}, 'Calculating the dot product of two vectors \\((A \\cdot B)\\)'),
+        React.createElement('table', {key: 'table', style: {padding: '20px 0 40px 0', margin: '0 auto', width: 600}}, React.createElement('tbody', null, rows))
+      ]),
       React.createElement('p', null, 'To calculate the magnitudes ( \\(\\left\\lVert A \\right\\rVert\\) and \\(\\left\\lVert B \\right\\rVert\\)) we take the sum of squares of each vector:'),
-      React.createElement('div', {className: 'fuzzyset-wide', style: {display: 'grid', gridGap: 30, gridTemplateColumns: '1fr 1fr'}}, [
-        React.createElement(Magnitude, {label: 'A', value:this.state.A, change: this.changeA}),
-        React.createElement(Magnitude, {label: 'B', value:this.state.B, change: this.changeB}),
+      React.createElement('div', {className: 'fuzzyset-wide', style: {overflow: 'auto', maxHeight: 716}}, [
+        React.createElement('h3', {key: 'header'}, 'Calculating the vector magnitudes \\((\\left\\lVert A \\right\\rVert\\) and \\(\\left\\lVert B \\right\\rVert)\\)'),
+        React.createElement('div', {key: 'container', style: {display: 'grid', gridGap: 30, gridTemplateColumns: '1fr 1fr', marginTop: 30, marginBottom: 40}}, [
+          React.createElement(Magnitude, {key: 'a', label: 'A', value:this.state.A, change: this.changeA}),
+          React.createElement(Magnitude, {key: 'b', label: 'B', value:this.state.B, change: this.changeB}),
+        ])
       ]),
       React.createElement('p', null, 'Putting all that together we get:'),
-      React.createElement('div', {className: 'fuzzyset-wide', style: {}},
-        React.createElement(FinalCosine, {A: this.state.A, B: this.state.B, changeA: this.changeA, changeB: this.changeB})
-      )
+      React.createElement('div', {className: 'fuzzyset-wide', style: {paddingTop: 1}},[
+        React.createElement('h3', {key: 'head'}, 'Calculating the cosine similarity score'),
+        React.createElement(FinalCosine, {key: 'similarity', A: this.state.A, B: this.state.B, changeA: this.changeA, changeB: this.changeB})
+      ])
       ]
     );
   }
@@ -1351,7 +1377,7 @@ var StorageExample = React.createClass({
   displayName: 'StorageExample',
   onClick: function(evt) {
     evt.preventDefault();
-    // TODO: set example
+    this.props.setStrings(this.props.strings)
   },
   render: function() {
     return React.createElement('div', null, 
@@ -1389,46 +1415,52 @@ var Storage = React.createClass({
     }
   },
   render: function() {
-    fuzzyset = FuzzySet(this.state.strings);
+    fuzzyset = FuzzySet(this.state.strings, false, 2,2);
 
     return React.createElement('div', null, [
-      React.createElement('div', {key: 'code-and-input', style: {display: 'grid', gridTemplateColumns: '40% 60%'}}, [
-        React.createElement('div', {key: 'strings', style:{maxHeight: 500, overflow: 'auto'}}, React.createElement('table', {className: 'no-zebra'}, React.createElement('tbody', null, [
-          React.createElement('tr', {key: 'other-examples'}, [
-            React.createElement('td', null, 'Examples:'),
-            React.createElement('td', null, [
-              React.createElement(StorageExample, {key: '1', name: 'Example 1', setStrings: this.setStrings}), // TODO: set examples
-              React.createElement(StorageExample, {key: '2', name: 'Example 2', setStrings: this.setStrings}), // TODO: set examples
-              this.state.strings[0] != 'Mississippi' || this.state.strings.length !== 1 ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), // TODO: set examples
+      React.createElement('div', {key: 'code-and-input', style: {display: 'grid', gridTemplateColumns: '36% 47%'}}, [
+        React.createElement('div', {key: 'strings', style:{maxHeight: 500, overflow: 'auto'}}, [
+          React.createElement('h3', null, 'Example'),
+          React.createElement('table', {className: 'no-zebra'}, React.createElement('tbody', null, [
+            React.createElement('tr', {key: 'other-examples'}, [
+              React.createElement('td', null, 'Examples:'),
+              React.createElement('td', null, [
+                React.createElement(StorageExample, {key: '1', name: 'Example 1', setStrings: this.setStrings, strings: ['test1']}), // TODO: set examples
+                React.createElement(StorageExample, {key: '2', name: 'Example 2', setStrings: this.setStrings, strings: ['test 2']}), // TODO: set examples
+                this.state.strings[0] != 'Mississippi' || this.state.strings.length !== 1 ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), // TODO: set examples
+              ]),
             ]),
-          ]),
-          React.createElement('tr', {key: 'string-inputs'}, [
-            React.createElement('td', {style: {verticalAlign: 'top'}}, 'List of strings:'),
-            React.createElement('td', null, this.state.strings.map((str, i) => {
-              return React.createElement('div', {key: 'str-'+i}, [
-                React.createElement('div', null, [
-                  React.createElement('input', {value: str, onChange: this.modifyStringI(i), style: {marginBottom: 7}}),
-                  React.createElement('span', {style: {paddingLeft: 5}}, 'x'),
-                ]),
-                i == this.state.strings.length-1 ? React.createElement('input', {placeholder: 'add string', value: this.state.newString, onKeyUp: this.newStringKeyUp, onChange: this.newString}) : null,
-                i == this.state.strings.length-1 && this.state.newString ? React.createElement('small', {style:{display: 'block'}}, 'Press enter to add string') : null,
-                ]
-              )
-            })),
-          ]),
-          React.createElement('tr', {key: 'function-call'}, [
-            React.createElement('td', null, 'Function call:'),
-            React.createElement('td', null, `fuzzyset = FuzzySet([${this.state.strings.map(str => `'${str.replace("\'", "\\\'")}'`).join(', ')}])`),
-          ]),
-        ]))),
-        React.createElement('pre', {key: 'code', style: {maxHeight: 500, marginBottom: 0}}, document.querySelector('#fuzzyset-add').innerText)
+            React.createElement('tr', {key: 'string-inputs'}, [
+              React.createElement('td', {style: {verticalAlign: 'top'}}, 'List of strings:'),
+              React.createElement('td', null, this.state.strings.map((str, i) => {
+                return React.createElement('div', {key: 'str-'+i}, [
+                  React.createElement('div', null, [
+                    React.createElement('input', {value: str, onChange: this.modifyStringI(i), style: {marginBottom: 7}}),
+                    React.createElement('span', {style: {paddingLeft: 5}}, 'x'),
+                  ]),
+                  i == this.state.strings.length-1 ? React.createElement('input', {placeholder: 'add string', value: this.state.newString, onKeyUp: this.newStringKeyUp, onChange: this.newString}) : null,
+                  i == this.state.strings.length-1 && this.state.newString ? React.createElement('small', {style:{display: 'block'}}, 'Press enter to add string') : null,
+                  ]
+                )
+              })),
+            ]),
+            React.createElement('tr', {key: 'function-call'}, [
+              React.createElement('td', {style: {verticalAlign: 'top'}}, 'Function call:'),
+              React.createElement('td', {style: {maxWidth: 140}}, React.createElement('code', null, `fuzzyset = FuzzySet([${this.state.strings.map(str => `'${str.replace("\'", "\\\'")}'`).join(', ')}], false, 2,2)`)),
+            ]),
+          ])),
+        ]),
+        React.createElement('div', {key: 'code-right'}, [
+          React.createElement('h3', {key: 'header'}, 'Code'),
+          React.createElement('pre', {key: 'code', style: {maxHeight: 500, marginBottom: 0}}, document.querySelector('#fuzzyset-add').innerText)
+        ])
       ]),
       React.createElement('div', {key: 'output'}, React.createElement('div', null, [
         React.createElement('h3', {style: {textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white', border: '1px solid #dfe2e5'}}, 'Result'),
-        React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 15}}, [
+        React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '23% 29% 29%', gap: 15}}, [
           React.createElement('div', null, [
             React.createElement('h4', {style: {textAlign: 'center'}}, React.createElement('code', null, 'fuzzyset.matchDict')),
-            // React.createElement('p', null, "Grams of length 2 and 3 are stored in fuzzyset.matchDict. We'll see why in the section on looking up matches."),
+
             React.createElement('table', null, [
               React.createElement('thead', null, [
                 React.createElement('tr', null, [
@@ -1462,20 +1494,25 @@ var Storage = React.createClass({
                 ]),
                 React.createElement('tr', null, [
                   React.createElement('th', null, 'gram size'),
-                  React.createElement('th', null, 'array of (\\(\\left\\lVert B \\right\\rVert, index to fuzzyset.exactSet ) pairs'),
+                  React.createElement('th', null, 'array of (\\(\\left\\lVert B \\right\\rVert\\), index to fuzzyset.exactSet ) pairs'),
                 ])
               ]),
               React.createElement('tbody', null, 
                 Object.entries(fuzzyset.items).map(entry => {
                   return React.createElement('tr', null, [
                     React.createElement('td', null, entry[0]),
-                    React.createElement('td', null, entry[1].map((pair, i) => {
-                      return React.createElement('div', null, `${i == 0 ? '[' : ''}(${pair[0]}, ${pair[1]})${ i == entry[1].length-1 ? ']': ''}`)
+                    React.createElement('td', {style: {maxWidth: 140}}, entry[1].map((pair, i) => {
+                      var magnitude = pair[0];
+                      if (magnitude !== Math.floor(magnitude)) {
+                        magnitude = magnitude.toFixed(3)
+                      }
+                      return React.createElement('div', null, `${i == 0 ? '[' : ''}(${magnitude}, ${pair[1]})${ i == entry[1].length-1 ? ']': ''}`)
                     })),
                   ])
                 })
               ),
             ]),
+            React.createElement('small', null, "This table is keyed by gram size so we can make a tradeoff between precision and lookup time. More on that in the next section."),
           ]),
           React.createElement('div', null, [
             React.createElement('h4', {style: {textAlign: 'center'}}, React.createElement('code', null, 'fuzzyset.exactSet')),
@@ -1493,14 +1530,13 @@ var Storage = React.createClass({
               React.createElement('tbody', null, 
                 Object.entries(fuzzyset.exactSet).map(entry => {
                   return React.createElement('tr', null, [
-                    React.createElement('td', null, entry[0]),
-                    React.createElement('td', null, entry[1]),
+                    React.createElement('td', {style: {maxWidth: 120}}, entry[0]),
+                    React.createElement('td', {style: {maxWidth: 120}}, entry[1]),
                   ])
                 })
               ),
             ]),
           ]),
-          React.createElement('div', null, 'fuzzyset.exactSet'),
         ]),
       ]))
     ])
@@ -1530,19 +1566,19 @@ var StartExample = React.createClass({
     return React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '23% 26% 42%', gap: 30}}, [
       React.createElement('div', {key: 'dictionary', style: {marginLeft: 20}}, [
         React.createElement('h3', {key: 'header'}, 'Dictionary'),
-        React.createElement('textarea', {key: 'input', value: this.state.dictionary, onChange: this.changeDictionary, rows: 15}),
+        React.createElement('textarea', {key: 'input', value: this.state.dictionary, onChange: this.changeDictionary, rows: 15, style: {border: '1px solid #ccc'}}),
         React.createElement('small', {key: 'caption', style: {display: 'block'}}, 'Try replacing with your own text, separated by newlines'),
         React.createElement('h4', {key: 'code-header'}, 'Code'),
-        React.createElement('pre', {key: 'code', style: {width: 200}}, `fs = FuzzySet([${this.state.dictionary.split('\n').map(term => `'${term.replace("\'", "\\\'")}'`).join(', ')}], false)`)
+        React.createElement('pre', {key: 'code', style: {width: 200, maxHeight: 100}}, `fs = FuzzySet([${this.state.dictionary.split('\n').map(term => `'${term.replace("\'", "\\\'")}'`).join(',\n')}], false)`)
       ]),
       React.createElement('div', {key: 'lookup'}, [
         React.createElement('h3', {key: 'header'}, 'Look up'),
         React.createElement('input', {key: 'input', value: this.state.lookup, onChange: this.changeLookup}),
         React.createElement('div', {key: 'example'}, [
-          React.createElement('small', null, 'or try: '),
-          React.createElement('small', null, React.createElement('a', {href: '#null', onClick: this.setLookup('masachusets')}, 'masachusets, ')),
-          React.createElement('small', null, React.createElement('a', {href: '#null', onClick: this.setLookup('missiouri')}, 'missiouri, ')),
-          React.createElement('small', null, React.createElement('a', {href: '#null', onClick: this.setLookup('south')}, 'south')),
+          React.createElement('small', {key: 'ortry'}, 'or try: '),
+          React.createElement('small', {key: 'first'}, React.createElement('a', {href: '#null', onClick: this.setLookup('masachusets')}, 'masachusets, ')),
+          React.createElement('small', {key: 'second'}, React.createElement('a', {href: '#null', onClick: this.setLookup('missiouri')}, 'missiouri, ')),
+          React.createElement('small', {key: 'third'}, React.createElement('a', {href: '#null', onClick: this.setLookup('south')}, 'south')),
         ]),
         React.createElement('h4', {key: 'code-header'}, 'Code'),
         React.createElement('pre', {key: 'code'}, `fs.get('${this.state.lookup.replace("\'", "\\\'")}')`)
@@ -1556,8 +1592,8 @@ var StartExample = React.createClass({
             React.createElement('th', {key: 'score-title'}, 'Similarity Score'),
           ]),
           result ? result.map(item => React.createElement('tr', null, [
-            React.createElement('td', null, item[1]),
-            React.createElement('td', null, item[0])
+            React.createElement('td', {key: 'string'}, item[1]),
+            React.createElement('td', {key: 'score'}, item[0] !== Math.floor(item[0]) ? item[0].toFixed(3) : item[0])
           ])) : React.createElement('tr', null, [
             React.createElement('td', {colSpan: 2, style: {textAlign: 'center', fontStyle: 'italic'}}, 'No results found')
           ])
