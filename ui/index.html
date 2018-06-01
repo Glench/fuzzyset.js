@@ -32,6 +32,16 @@
       color: red;
       text-decoration: none;
     }
+    .CodeMirror {
+      font-size: 14px !important;
+      background-color: #f6f8fa !important;
+      border: 1px solid #dfe2e5;
+      padding: 5px;
+    }
+    .error .CodeMirror {
+      background-color: #fff2f2 !important;
+      border: 1px solid red;
+    }
     .fuzzyset-wide {
       margin: 30px -20px 50px -20px;
       padding: 0 20px;
@@ -77,6 +87,7 @@
 
 
   <link media="all"  rel="stylesheet" href="./codemirror-5.38.0/lib/codemirror.css">
+  <link media="all"  rel="stylesheet" href="./codemirror-5.38.0/theme/github.css">
 
   <link media="all"  rel="stylesheet" href="./ui_files/frameworks-23c9e7262eee71bc6f67f6950190a162.css">
   <link media="all"  rel="stylesheet" href="./ui_files/github-6c7a91a667cda2df911e2af635cea73f.css">
@@ -821,8 +832,7 @@ var _gramCounter = function(value, gramSize) {
         }
     }
     return result;
-};
-          </script>
+};</script>
 
           <div id="fuzzyset-vectorize" class="fuzzyset-wide">
             Uh oh, there was an error. Do you have JavaScript enabled?
@@ -1090,6 +1100,13 @@ fuzzyset._normalizeStr = function(str) {
     componentDidMount: function() {
       this.codemirrorInstance = CodeMirror.fromTextArea(this.refs.textarea, this.props.options)
       this.codemirrorInstance.on('change', this.codemirrorValueChanged)
+      this.updateStyle();
+    },
+    updateStyle: function() {
+      this.codemirrorInstance.getWrapperElement().style.height = this.props.style.height;
+    },
+    componentDidUpdate: function() {
+      this.updateStyle();
     },
     codemirrorValueChanged: function(doc, change) {
       if (this.props.options.onChange && change.origin !== 'setValue') {
@@ -1102,7 +1119,7 @@ fuzzyset._normalizeStr = function(str) {
       }
     },
     render: function() {
-      return React.createElement('div', null, React.createElement('textarea', {ref: 'textarea', autoComplete: 'off', defaultValue: this.props.options.value}))
+      return React.createElement('div', {className: this.props.className}, React.createElement('textarea', {ref: 'textarea', autoComplete: 'off', defaultValue: this.props.options.value}))
     }
   });
 </script>
@@ -1199,8 +1216,8 @@ var ConvertToVector = React.createClass({
           ),
         ]),
         React.createElement('div', {key: 'code', style: {width: 440}}, [
-            [React.createElement('h3', {key: 'header', style: {display: 'inline-block'}}, 'Code'), React.createElement('small', {style: {paddingLeft: 5}}, '  (try editing!)')],
-            React.createElement('pre', {key: 'code'}, this.state.code)
+            [React.createElement('h3', {key: 'header', style: {display: 'inline-block'}}, 'Code'), React.createElement('small', {key: 'paren', style: {paddingLeft: 5}}, '  (try editing!)')],
+            React.createElement(ReactCodeMirror, {key: 'code', className: this.state.codeError ? 'error': '', style: {height: 'auto'}, options: {value: this.state.code, mode: 'javascript', theme: 'github'}})
           ]
         )
       ])
@@ -1429,7 +1446,6 @@ var Storage = React.createClass({
     }
   },
   componentDidUpdate: function() {
-    console.log(this.state.code)
   },
   setStrings: function(strings) {
     this.setState({strings: strings})
@@ -1460,15 +1476,29 @@ var Storage = React.createClass({
     }
   },
   changeCode: function(code) {
-    console.log('changecod',code)
     var error = false;
     try {
       eval(code)
+    } catch(e) {
+      error = true;
     }
-    this.setState({code: code})
+    this.setState({code: code, codeError: error})
   },
   render: function() {
-    fuzzyset = FuzzySet(this.state.strings, false, 2,2);
+    var fs = FuzzySet([], false, 2,2);
+    if (!this.state.codeError) {
+      fs.add = fuzzyset.add.bind(fs)
+      fs._add = fuzzyset._add.bind(fs)
+      fs._normalizeStr = fuzzyset._normalizeStr.bind(fs);
+      try {
+        this.state.strings.forEach(str => fs.add(str))
+      } catch(e) {
+        console.error(e)
+        fs = FuzzySet(this.state.strings, false, 2,2);
+      }
+    } else {
+      fs = FuzzySet(this.state.strings, false, 2,2);
+    }
 
     return React.createElement('div', null, [
       React.createElement('div', {key: 'code-and-input', style: {display: 'grid', gridTemplateColumns: '42% 56%', gap: 15}}, [
@@ -1505,7 +1535,7 @@ var Storage = React.createClass({
         ]),
         React.createElement('div', {key: 'code-right'}, [
           React.createElement('h3', {key: 'header'}, 'Code'),
-          React.createElement(ReactCodeMirror, {key: 'code', options: {value: this.state.code, mode: 'javascript', onChange: this.changeCode}})
+          React.createElement(ReactCodeMirror, {key: 'code', className: this.state.codeError ? 'error':'', style: {height: '500px'}, options: {value: this.state.code, mode: 'javascript', onChange: this.changeCode, theme: 'github'}})
         ])
       ]),
       React.createElement('div', {key: 'output'}, React.createElement('div', null, [
@@ -1526,7 +1556,7 @@ var Storage = React.createClass({
                 ])
               ]),
               React.createElement('tbody', null, 
-                Object.entries(fuzzyset.matchDict).map(entry => {
+                Object.entries(fs.matchDict).map(entry => {
                   return React.createElement('tr', null, [
                     React.createElement('td', null, entry[0]),
                     React.createElement('td', null, entry[1].map((pair, i) => {
@@ -1551,7 +1581,7 @@ var Storage = React.createClass({
                 ])
               ]),
               React.createElement('tbody', null, 
-                Object.entries(fuzzyset.items).map(entry => {
+                Object.entries(fs.items).map(entry => {
                   return React.createElement('tr', null, [
                     React.createElement('td', null, entry[0]),
                     React.createElement('td', {style: {maxWidth: 140}}, entry[1].map((pair, i) => {
@@ -1581,7 +1611,7 @@ var Storage = React.createClass({
                 ])
               ]),
               React.createElement('tbody', null, 
-                Object.entries(fuzzyset.exactSet).map(entry => {
+                Object.entries(fs.exactSet).map(entry => {
                   return React.createElement('tr', null, [
                     React.createElement('td', {style: {maxWidth: 120}}, entry[0]),
                     React.createElement('td', {style: {maxWidth: 120}}, entry[1]),
