@@ -24,6 +24,14 @@
     small {
       font-size: 13px !important;
     }
+    a.remove {
+      font-size: 15px;
+      padding: 3px 5px;
+    }
+    a.remove:hover {
+      color: red;
+      text-decoration: none;
+    }
     .fuzzyset-wide {
       margin: 30px -20px 50px -20px;
       padding: 0 20px;
@@ -67,6 +75,8 @@
   <link rel="dns-prefetch" href="https://user-images.githubusercontent.com/">
 
 
+
+  <link media="all"  rel="stylesheet" href="./codemirror-5.38.0/lib/codemirror.css">
 
   <link media="all"  rel="stylesheet" href="./ui_files/frameworks-23c9e7262eee71bc6f67f6950190a162.css">
   <link media="all"  rel="stylesheet" href="./ui_files/github-6c7a91a667cda2df911e2af635cea73f.css">
@@ -845,9 +855,8 @@ var _gramCounter = function(value, gramSize) {
 
           <p>Here's what that looks like in practice:</p>
 
-          <script id="fuzzyset-add">fuzzyset = {gramSizeLower: 2, gramSizeUpper: 2, matchDict: {}, items: {}, exactSet: {}};
-
-fuzzyset.add = function(value) {
+          <script>fuzzyset = {gramSizeLower: 2, gramSizeUpper: 2, matchDict: {}, items: {}, exactSet: {}};</script>
+          <script id="fuzzyset-add">fuzzyset.add = function(value) {
     var normalizedValue = this._normalizeStr(value);
     if (normalizedValue in this.exactSet) {
         return false;
@@ -884,11 +893,13 @@ fuzzyset._add = function(value, gramSize) {
 };
 
 fuzzyset._normalizeStr = function(str) {
-    if (Object.prototype.toString.call(str) !== '[object String]') throw 'Must use a string as argument to FuzzySet functions';
+    if (Object.prototype.toString.call(str) !== '[object String]') {
+     throw 'Must use a string as argument to FuzzySet functions';
+    }
     return str.toLowerCase();
 };
           </script>
-          <div class="fuzzyset-wide" style="display: grid; grid-template-columns: 1fr;">
+          <div class="fuzzyset-wide" style="padding-top: 1px">
             <h3 style="margin-bottom: 0;">How Fuzzyset stores strings</h3>
             <div id="fuzzyset-storage">
               Uh oh, there was an error. Do you have JavaScript enabled?
@@ -958,13 +969,11 @@ fuzzyset._normalizeStr = function(str) {
 
           <ul>
             <li>add code editing</li>
-            <li>figure out how to center things within grid</li>
             <li>get mathjax to work locally</li>
             <li>design "looking up" section</li>
-            <li>Get "store strings" example links working</li>
-            <li>get "x" button working on "store strings" example</li>
             <li>fix titles of table headers on "store strings" example</li>
             <li>Add dynamic highlighting/scrolling/captions to "store strings" example?</li>
+            <li>set size limit on table heights in store strings</li>
           </ul>
 
           <p>before publishing: </p>
@@ -1069,11 +1078,35 @@ fuzzyset._normalizeStr = function(str) {
 <script src="../lib/fuzzyset.js" charset="utf-8"></script>
 <script src="react.js" charset="utf-8"></script>
 <script src="react-dom.js" charset="utf-8"></script>
-
 <!-- production build
 <script src="react.min.js" charset="utf-8"></script>
 <script src="react-dom.min.js" charset="utf-8"></script>
 -->
+<script src="codemirror-5.38.0/lib/codemirror.js" charset="utf-8"></script>
+<script src="codemirror-5.38.0/mode/javascript/javascript.js" charset="utf-8"></script>
+<script>
+  var ReactCodeMirror = React.createClass({
+    displayName: 'React-Codemirror',
+    componentDidMount: function() {
+      this.codemirrorInstance = CodeMirror.fromTextArea(this.refs.textarea, this.props.options)
+      this.codemirrorInstance.on('change', this.codemirrorValueChanged)
+    },
+    codemirrorValueChanged: function(doc, change) {
+      if (this.props.options.onChange && change.origin !== 'setValue') {
+        this.props.options.onChange(doc.getValue(), change);
+      }
+    },
+    componentWillUnmount: function() {
+      if (this.codemirrorInstance) {
+        this.codemirrorInstance.toTextArea();
+      }
+    },
+    render: function() {
+      return React.createElement('div', null, React.createElement('textarea', {ref: 'textarea', autoComplete: 'off', defaultValue: this.props.options.value}))
+    }
+  });
+</script>
+
 
 <script>
 var Vector = React.createClass({
@@ -1217,7 +1250,7 @@ var Magnitude = React.createClass({
       React.createElement('td', {key: 'sqrtsum-sum', style: {backgroundColor: 'yellow', fontWeight: 'bold'}}, sqrt == Math.floor(sqrt) ? sqrt : sqrt.toFixed(3)),
     ]))
 
-    return React.createElement('table', null, React.createElement('tbody', null, rows));
+    return React.createElement('table', {style: this.props.style}, React.createElement('tbody', null, rows));
   }
 });
 
@@ -1250,8 +1283,8 @@ var FinalCosine = React.createClass({
       bMagnitude = bMagnitude.toFixed(3)
     }
     return React.createElement('div', {style: {padding: 40}}, [
-      React.createElement('div', {key: 'inputs', style: {display: 'grid', gridTemplateColumns: '1fr 1fr'}}, [
-        React.createElement('div', {key: 'A'}, [
+      React.createElement('div', {key: 'inputs', style: {display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 30}}, [
+        React.createElement('div', {key: 'A', style: {textAlign: 'right'}}, [
           React.createElement('label', null, 'A: '),
           React.createElement('input', {value: this.props.A, onChange: this.props.changeA})
         ]),
@@ -1359,7 +1392,7 @@ var CosineSimilarity = React.createClass({
       React.createElement('div', {className: 'fuzzyset-wide', style: {overflow: 'auto', maxHeight: 716}}, [
         React.createElement('h3', {key: 'header'}, 'Calculating the vector magnitudes \\((\\left\\lVert A \\right\\rVert\\) and \\(\\left\\lVert B \\right\\rVert)\\)'),
         React.createElement('div', {key: 'container', style: {display: 'grid', gridGap: 30, gridTemplateColumns: '1fr 1fr', marginTop: 30, marginBottom: 40}}, [
-          React.createElement(Magnitude, {key: 'a', label: 'A', value:this.state.A, change: this.changeA}),
+          React.createElement(Magnitude, {key: 'a', label: 'A', value:this.state.A, change: this.changeA, style: {paddingLeft: 100}}),
           React.createElement(Magnitude, {key: 'b', label: 'B', value:this.state.B, change: this.changeB}),
         ])
       ]),
@@ -1389,9 +1422,14 @@ var Storage = React.createClass({
   displayName: 'Storage',
   getInitialState: function() {
     return {
+      code: document.querySelector('#fuzzyset-add').innerText,
+      codeError: false,
       newString: '',
       strings: ['Mississippi'],
     }
+  },
+  componentDidUpdate: function() {
+    console.log(this.state.code)
   },
   setStrings: function(strings) {
     this.setState({strings: strings})
@@ -1414,35 +1452,50 @@ var Storage = React.createClass({
       this.setState({strings: strings, newString: ''})
     }
   },
+  removeItem: function(itemIndex) {
+    return (evt) => {
+      var strings = this.state.strings.slice();
+      strings.splice(itemIndex, 1); // remove 1 item at itemIndex
+      this.setState({strings: strings})
+    }
+  },
+  changeCode: function(code) {
+    console.log('changecod',code)
+    var error = false;
+    try {
+      eval(code)
+    }
+    this.setState({code: code})
+  },
   render: function() {
     fuzzyset = FuzzySet(this.state.strings, false, 2,2);
 
     return React.createElement('div', null, [
-      React.createElement('div', {key: 'code-and-input', style: {display: 'grid', gridTemplateColumns: '36% 47%'}}, [
+      React.createElement('div', {key: 'code-and-input', style: {display: 'grid', gridTemplateColumns: '42% 56%', gap: 15}}, [
         React.createElement('div', {key: 'strings', style:{maxHeight: 500, overflow: 'auto'}}, [
           React.createElement('h3', null, 'Example'),
           React.createElement('table', {className: 'no-zebra'}, React.createElement('tbody', null, [
             React.createElement('tr', {key: 'other-examples'}, [
               React.createElement('td', null, 'Examples:'),
               React.createElement('td', null, [
-                React.createElement(StorageExample, {key: '1', name: 'Example 1', setStrings: this.setStrings, strings: ['test1']}), // TODO: set examples
-                React.createElement(StorageExample, {key: '2', name: 'Example 2', setStrings: this.setStrings, strings: ['test 2']}), // TODO: set examples
+                React.createElement(StorageExample, {key: '1', name: 'Two US states with shared grams', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri']}), // TODO: set examples
+                React.createElement(StorageExample, {key: '2', name: 'Three US states', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri', 'Massachusetts']}), // TODO: set examples
                 this.state.strings[0] != 'Mississippi' || this.state.strings.length !== 1 ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), // TODO: set examples
               ]),
             ]),
             React.createElement('tr', {key: 'string-inputs'}, [
               React.createElement('td', {style: {verticalAlign: 'top'}}, 'List of strings:'),
-              React.createElement('td', null, this.state.strings.map((str, i) => {
+              React.createElement('td', null, this.state.strings.length > 0 ? this.state.strings.map((str, i) => {
                 return React.createElement('div', {key: 'str-'+i}, [
                   React.createElement('div', null, [
                     React.createElement('input', {value: str, onChange: this.modifyStringI(i), style: {marginBottom: 7}}),
-                    React.createElement('span', {style: {paddingLeft: 5}}, 'x'),
+                    React.createElement('a', {className: 'remove', title: 'remove string', href: '#null', style: {paddingLeft: 5, fontFamily: 'Helvetica, Arial, sans-serif'}, onClick: this.removeItem(i)}, 'x'),
                   ]),
                   i == this.state.strings.length-1 ? React.createElement('input', {placeholder: 'add string', value: this.state.newString, onKeyUp: this.newStringKeyUp, onChange: this.newString}) : null,
                   i == this.state.strings.length-1 && this.state.newString ? React.createElement('small', {style:{display: 'block'}}, 'Press enter to add string') : null,
                   ]
                 )
-              })),
+              }) : React.createElement('input', {placeholder: 'add string', value: this.state.newString, onKeyUp: this.newStringKeyUp, onChange: this.newString})),
             ]),
             React.createElement('tr', {key: 'function-call'}, [
               React.createElement('td', {style: {verticalAlign: 'top'}}, 'Function call:'),
@@ -1452,12 +1505,12 @@ var Storage = React.createClass({
         ]),
         React.createElement('div', {key: 'code-right'}, [
           React.createElement('h3', {key: 'header'}, 'Code'),
-          React.createElement('pre', {key: 'code', style: {maxHeight: 500, marginBottom: 0}}, document.querySelector('#fuzzyset-add').innerText)
+          React.createElement(ReactCodeMirror, {key: 'code', options: {value: this.state.code, mode: 'javascript', onChange: this.changeCode}})
         ])
       ]),
       React.createElement('div', {key: 'output'}, React.createElement('div', null, [
         React.createElement('h3', {style: {textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white', border: '1px solid #dfe2e5'}}, 'Result'),
-        React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '23% 29% 29%', gap: 15}}, [
+        React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '27.5% 35% 35%', gap: 15}}, [
           React.createElement('div', null, [
             React.createElement('h4', {style: {textAlign: 'center'}}, React.createElement('code', null, 'fuzzyset.matchDict')),
 
