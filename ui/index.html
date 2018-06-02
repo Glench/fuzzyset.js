@@ -174,7 +174,7 @@
 
         <p>This document is just one example of a representation of a program, a research project hand-crafted to give it the best possible chance of successfully facilitating understanding. My hope is that this example of a well-explained system will provide clues about how to better represent programs with the possibility that these sorts of human-understandable artifacts can be created automatically as a by-product of authoring programs, or even <em>become the way that programs are created</em>.</p>
 
-        <p>Ultimately, I think programming has to change to accomodate human cognition and social processes for dealing with complexity &mdash; once it does, programming will be a lot easier for experts and a lot more accessible to beginners. Until then! &#x1F31F;</p>
+        <p>Ultimately, I think programming models and UI have to change to accomodate human cognition and social processes for dealing with complexity &mdash; once it does, programming will be a lot easier for experts and a lot more accessible to beginners. Until then! &#x1F31F;</p>
 
         <cite style="display: block; margin: 30px 0 30px 500px; font-style: normal; line-height: 1;">
           <p style="margin-bottom: -7px;"><a style="text-decoration: underline;" href="http://glench.com">Glen Chiacchieri</a></p>
@@ -801,8 +801,8 @@
             To turn a string into numeric vector, we use the <code>_gramCounter</code> function which counts the character substrings ("grams") in a given string:
           </p>
 
-          <script id="gramCounter">var _nonWordRe = /[^a-zA-Z0-9\u00C0-\u00FF, ]+/g;
-var _iterateGrams = function(value, gramSize) {
+          <script id="gramCounter">_nonWordRe = /[^a-zA-Z0-9\u00C0-\u00FF, ]+/g;
+_iterateGrams = function(value, gramSize) {
     gramSize = gramSize || 2;
     var simplified = '-' + value.toLowerCase().replace(_nonWordRe, '') + '-',
         lenDiff = gramSize - simplified.length,
@@ -818,7 +818,7 @@ var _iterateGrams = function(value, gramSize) {
     return results;
 };
 
-var _gramCounter = function(value, gramSize) {
+_gramCounter = function(value, gramSize) {
     // return an object where key=gram, value=number of occurrences
     gramSize = gramSize || 2;
     var result = {},
@@ -1105,7 +1105,13 @@ fuzzyset._normalizeStr = function(str) {
     updateStyle: function() {
       this.codemirrorInstance.getWrapperElement().style.height = this.props.style.height;
     },
-    componentDidUpdate: function() {
+    componentWillReceiveProps: function(nextProps) {
+      console.log(nextProps.options.value, this.codemirrorInstance.getValue())
+      if (nextProps.options.value !== this.codemirrorInstance.getValue()) {
+        this.codemirrorInstance.setValue(nextProps.options.value);
+      }
+    },
+    componentDidUpdate: function(prevProps) {
       this.updateStyle();
     },
     codemirrorValueChanged: function(doc, change) {
@@ -1165,6 +1171,7 @@ var ConvertToVector = React.createClass({
   getInitialState: function() {
     return {
       'code': document.querySelector('#gramCounter').innerText,
+      'codeError': false,
       'value': 'Mississippi',
       'gramSize': 2,
     }
@@ -1180,6 +1187,19 @@ var ConvertToVector = React.createClass({
       // TODO: display error
     }
     this.setState({gramSize: gramSize})
+  },
+  changeCode: function(code) {
+    var error = false;
+    try {
+      eval(code)
+    } catch(e) {
+      error = true;
+    }
+    this.setState({code: code, codeError: error})
+  },
+  resetCode: function(evt) {
+    evt.preventDefault();
+    this.setState({code: document.querySelector('#gramCounter').innerText, codeError: false})
   },
   render: function() {
     return React.createElement('div', {className: 'fuzzyset-excode'}, [
@@ -1216,8 +1236,8 @@ var ConvertToVector = React.createClass({
           ),
         ]),
         React.createElement('div', {key: 'code', style: {width: 440}}, [
-            [React.createElement('h3', {key: 'header', style: {display: 'inline-block'}}, 'Code'), React.createElement('small', {key: 'paren', style: {paddingLeft: 5}}, '  (try editing!)')],
-            React.createElement(ReactCodeMirror, {key: 'code', className: this.state.codeError ? 'error': '', style: {height: 'auto'}, options: {value: this.state.code, mode: 'javascript', theme: 'github'}})
+            [ React.createElement('h3', {key: 'header', style: {display: 'inline-block'}}, 'Code'), this.state.code === document.querySelector('#gramCounter').innerText ? React.createElement('small', {key: 'paren', style: {paddingLeft: 5}}, '  (try editing!)') : React.createElement('a', {href: '#null', onClick: this.resetCode}, ' (reset)')],
+            React.createElement(ReactCodeMirror, {key: 'code', className: this.state.codeError ? 'error': '', style: {height: 'auto'}, options: {value: this.state.code, mode: 'javascript', theme: 'github', onChange: this.changeCode}})
           ]
         )
       ])
