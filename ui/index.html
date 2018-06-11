@@ -874,7 +874,7 @@ _gramCounter = function(value, gramSize) {
 
           <h1>Storing the Dictionary</h1>
 
-          <p>We want to use the algorithm described above to match a dictionary of strings to user input. To store strings efficiently so they can be later compared using cosine similarity, we use the following strategy:</p>
+          <p>We want to use the formula described above to match a dictionary of strings to user input. To store strings efficiently so they can be later compared using cosine similarity, we use the following strategy:</p>
 
           <p style="text-align: center;"><img src="storage.png" alt="Annotated cosine similarity equation showing the storage of the vector parts in fuzzyset.matchDict and the vector magnitude in fuzzyset.items." /><small style="display: block;">(\(A \cdot B\) and \(\left\lVert A \right\rVert\) will be calculated on-the-fly when looking up matches.)</small></p>
 
@@ -935,26 +935,164 @@ fuzzyset._normalizeStr = function(str) {
 
           <h1>Looking Up Matches</h1>
 
-          <p>To look up matching words in a fuzzyset, we first look up the word in <code>fuzzyset.exactSet</code>. If it's there, then we found a perfect match and can return it right away.</p>
+          <p>To look up a user's input string in the dictionary, we first look up the word in <code>fuzzyset.exactSet</code>. If it's there, then we found a perfect match and can return it right away.</p>
 
           <p>Otherwise, we break up the word into grams and look up the grams in <code>fuzzyset.matchDict</code> to get a list of words with shared grams. We compute the cosine similarity for each using the gram counts in <code>fuzzyset.matchDict</code> and the magnitude in <code>fuzzyset.items</code>:</p>
-          <div class="fuzzyset-wide">
-            meow
+
+<script id="lookup">// helper functions
+var levenshtein = function(str1, str2) {
+    var current = [], prev, value;
+
+    for (var i = 0; i <= str2.length; i++)
+        for (var j = 0; j <= str1.length; j++) {
+        if (i && j)
+            if (str1.charAt(j - 1) === str2.charAt(i - 1))
+            value = prev;
+            else
+            value = Math.min(current[j], current[j - 1], prev) + 1;
+        else
+            value = i + j;
+
+        prev = current[j];
+        current[j] = value;
+        }
+
+    return current.pop();
+};
+
+// return an edit distance from 0 to 1
+var _distance = function(str1, str2) {
+    if (str1 === null && str2 === null) throw 'Trying to compare two null values';
+    if (str1 === null || str2 === null) return 0;
+    str1 = String(str1); str2 = String(str2);
+
+    var distance = levenshtein(str1, str2);
+    if (str1.length > str2.length) {
+        return 1 - distance / str1.length;
+    } else {
+        return 1 - distance / str2.length;
+    }
+};
+
+// main lookup function
+fuzzyset.get = function(value, defaultValue, minMatchScore) {
+    // check for value in set, returning defaultValue or null if none found
+    if (minMatchScore === undefined) {
+        minMatchScore = .33
+    }
+    var result = this._get(value, minMatchScore);
+    if (!result && typeof defaultValue !== 'undefined') {
+        return defaultValue;
+    }
+    return result;
+};
+
+fuzzyset._get = function(value, minMatchScore) {
+    var normalizedValue = this._normalizeStr(value),
+        result = this.exactSet[normalizedValue];
+    if (result) {
+        return [[1, result]];
+    }
+
+    var results = [];
+    // start with high gram size and if there are no results, go to lower gram sizes
+    for (var gramSize = this.gramSizeUpper; gramSize >= this.gramSizeLower; --gramSize) {
+        results = this.__get(value, gramSize, minMatchScore);
+        if (results && results.length > 0) {
+            return results;
+        }
+    }
+    return null;
+};
+
+fuzzyset.__get = function(value, gramSize, minMatchScore) {
+    var normalizedValue = this._normalizeStr(value),
+        matches = {},
+        gramCounts = _gramCounter(normalizedValue, gramSize),
+        items = this.items[gramSize],
+        sumOfSquareGramCounts = 0,
+        gram,
+        gramCount,
+        i,
+        index,
+        otherGramCount;
+
+    for (gram in gramCounts) {
+        gramCount = gramCounts[gram];
+        sumOfSquareGramCounts += Math.pow(gramCount, 2);
+        if (gram in this.matchDict) {
+            for (i = 0; i < this.matchDict[gram].length; ++i) {
+                index = this.matchDict[gram][i][0];
+                otherGramCount = this.matchDict[gram][i][1];
+                if (index in matches) {
+                    matches[index] += gramCount * otherGramCount;
+                } else {
+                    matches[index] = gramCount * otherGramCount;
+                }
+            }
+        }
+    }
+
+    function isEmptyObject(obj) {
+        for(var prop in obj) {
+            if(obj.hasOwnProperty(prop))
+                return false;
+        }
+        return true;
+    }
+
+    if (isEmptyObject(matches)) {
+        return null;
+    }
+
+    var vectorNormal = Math.sqrt(sumOfSquareGramCounts),
+        results = [],
+        matchScore;
+    // build a results list of [score, str]
+    for (var matchIndex in matches) {
+        matchScore = matches[matchIndex];
+        results.push([matchScore / (vectorNormal * items[matchIndex][0]), items[matchIndex][1]]);
+    }
+    var sortDescending = function(a, b) {
+        if (a[0] < b[0]) {
+            return 1;
+        } else if (a[0] > b[0]) {
+            return -1;
+        } else {
+            return 0;
+        }
+    };
+    results.sort(sortDescending);
+    if (this.useLevenshtein) {
+        var newResults = [],
+            endIndex = Math.min(50, results.length);
+        // truncate somewhat arbitrarily to 50
+        for (var i = 0; i < endIndex; ++i) {
+            newResults.push([_distance(results[i][1], normalizedValue), results[i][1]]);
+        }
+        results = newResults;
+        results.sort(sortDescending);
+    }
+    var newResults = [];
+    results.forEach(function(scoreWordPair) {
+        if (scoreWordPair[0] >= minMatchScore) {
+            newResults.push([scoreWordPair[0], this.exactSet[scoreWordPair[1]]]);
+        }
+    }.bind(this))
+    return newResults;
+};</script>
+          <div class="fuzzyset-wide" style="padding-top: 1px">
+            <div id="fuzzyset-lookup">
+              Uh oh, there was an error. Do you have JavaScript enabled?
+            </div>
           </div>
 
-          <h1>Sandbox</h1>
-          <p>Here is a sandbox to play around with FuzzySet and its parameters.</p>
-          <div class="fuzzyset-wide">
-            meow
-          </div>
 
           <h1>TODO (production notes)</h1>
 
           <ul>
             <li>get mathjax to work locally</li>
             <li>design "looking up" section</li>
-            <li>fix titles of table headers on "store strings" example</li>
-            <li>set size limit on table heights in store strings</li>
           </ul>
 
           <p>before publishing: </p>
@@ -1487,14 +1625,15 @@ var Storage = React.createClass({
             React.createElement('tr', {key: 'other-examples'}, [
               React.createElement('td', null, 'Examples:'),
               React.createElement('td', null, [
-                React.createElement(StorageExample, {key: '1', name: 'Two US states with shared grams', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri']}), // TODO: set examples
-                React.createElement(StorageExample, {key: '2', name: 'Three US states', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri', 'California']}), // TODO: set examples
+                React.createElement(StorageExample, {key: '1', name: 'Two US states with shared grams', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri']}),
+                React.createElement(StorageExample, {key: '2', name: 'Three US states', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri', 'California']}),
+                React.createElement(StorageExample, {key: '3', name: 'All US states', setStrings: this.setStrings, strings: US_state_list.split('\n')}), 
                 this.state.dictionary !== 'Mississippi' ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), // TODO: set examples
               ]),
             ]),
             React.createElement('tr', {key: 'string-inputs'}, [
-              React.createElement('td', {style: {verticalAlign: 'top'}}, 'List of strings:'),
-              React.createElement('td', null, React.createElement('textarea', {rows: strings.length, placeholder: 'Add strings separated by newlines', value: this.state.dictionary, onChange: this.changeDictionary})),
+              React.createElement('td', {style: {verticalAlign: 'top'}}, 'List of strings: (separated by newlines)'),
+              React.createElement('td', null, React.createElement('textarea', {rows: Math.max(2, strings.length), placeholder: 'Add strings separated by newlines', value: this.state.dictionary, onChange: this.changeDictionary, style: {border: '1px solid #ccc'}})),
             ]),
             React.createElement('tr', {key: 'function-call'}, [
               React.createElement('td', {style: {verticalAlign: 'top'}}, 'Function call:'),
@@ -1541,7 +1680,7 @@ var Storage = React.createClass({
                             duration: 0,
                             onShow: this.setHighlightIndex(pair[0]),
                             onHide: this.setHighlightIndex(null),
-                            html: React.createElement('span', null, `The gram '${entry[0]}' appears in the word `, React.createElement('b', null, `'${fs.items[3][pair[0]][1]}'`), `, item number `, React.createElement('span', {style: {color: 'red'}}, pair[0]), ` in fuzzyset.items`),
+                            html: React.createElement('span', null, `The gram "${entry[0]}" appears in the word `, React.createElement('b', null, `"${fs.items[3][pair[0]][1]}"`), `, item number `, React.createElement('span', {style: {color: 'red'}}, pair[0]), ` in fuzzyset.items`),
                             key: 'item-index'
                           }, pair[0]),
                           React.createElement('span', {key: 'comma'}, ', '),
@@ -1550,7 +1689,7 @@ var Storage = React.createClass({
                             key: 'count',
                             duration: 0,
                             // position: 'bottom',
-                            html: React.createElement('span', null, `The gram '${entry[0]}' appears in `, React.createElement('b', null, `'${fs.items[3][pair[0]][1]}' `), React.createElement('span', {style: {color: 'red'}}, pair[1]), ` ${pair[1] == 1 ? 'time': 'times'}`)
+                            html: React.createElement('span', null, `The gram "${entry[0]}" appears in `, React.createElement('b', null, `"${fs.items[3][pair[0]][1]}" `), React.createElement('span', {style: {color: 'red'}}, pair[1]), ` ${pair[1] == 1 ? 'time': 'times'}`)
                           }, pair[1]),
                           React.createElement('span', {key: 'end-bracket'}, i == entry[1].length-1 ? ')]': ')'),
                         ])
@@ -1623,13 +1762,14 @@ var Storage = React.createClass({
     ])
   }
 });
+var US_state_list = `Alabama\nAlaska\nArizona\nArkansas\nCalifornia\nColorado\nConnecticut\nDelaware\nFlorida\nGeorgia\nHawaii\nIdaho\nIllinois\nIndiana\nIowa\nKansas\nKentucky\nLouisiana\nMaine\nMaryland\nMassachusetts\nMichigan\nMinnesota\nMississippi\nMissouri\nMontana\nNebraska\nNevada\nNew Hampshire\nNew Jersey\nNew Mexico\nNew York\nNorth Carolina\nNorth Dakota\nOhio\nOklahoma\nOregon\nPennsylvania\nRhode Island\nSouth Carolina\nSouth Dakota\nTennessee\nTexas\nUtah\nVermont\nVirginia\nWashington\nWest Virginia\nWisconsin\nWyoming`
 
 var StartExample = React.createClass({
   displayName: 'StartExample',
   getInitialState: function() {
     return {
       lookup: 'mossisippi',
-      dictionary: `Alabama\nAlaska\nArizona\nArkansas\nCalifornia\nColorado\nConnecticut\nDelaware\nFlorida\nGeorgia\nHawaii\nIdaho\nIllinois\nIndiana\nIowa\nKansas\nKentucky\nLouisiana\nMaine\nMaryland\nMassachusetts\nMichigan\nMinnesota\nMississippi\nMissouri\nMontana\nNebraska\nNevada\nNew Hampshire\nNew Jersey\nNew Mexico\nNew York\nNorth Carolina\nNorth Dakota\nOhio\nOklahoma\nOregon\nPennsylvania\nRhode Island\nSouth Carolina\nSouth Dakota\nTennessee\nTexas\nUtah\nVermont\nVirginia\nWashington\nWest Virginia\nWisconsin\nWyoming`
+      dictionary: US_state_list,
     }
   },
   changeLookup: function(evt) {
@@ -1686,10 +1826,32 @@ var StartExample = React.createClass({
   }
 });
 
+var Lookup = React.createClass({
+  displayName: 'Lookup',
+  getInitialState: function() {
+    return {
+      dictionary: US_state_list,
+      gramSizeUpper: 3,
+      gramSizeLower: 2,
+      useLevenshtein: false,
+      lookup: 'north',
+    }
+  },
+  render: function() {
+    return React.createElement('div', null, [
+      React.createElement('h3', {key: 'header'}, 'How Fuzzyset looks up strings'),
+      React.createElement('div', {key: 'inputs'}, [
+
+      ]),
+    ])
+  }
+})
+
 ReactDOM.render(React.createElement(ConvertToVector), document.querySelector('#fuzzyset-vectorize'))
 ReactDOM.render(React.createElement(CosineSimilarity), document.querySelector('#fuzzyset-cosinesimilarity'))
 ReactDOM.render(React.createElement(Storage), document.querySelector('#fuzzyset-storage'))
 ReactDOM.render(React.createElement(StartExample), document.querySelector('#fuzzyset-starting-example'))
+ReactDOM.render(React.createElement(Lookup), document.querySelector('#fuzzyset-lookup'))
 
 </script>
 
