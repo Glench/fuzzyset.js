@@ -1541,7 +1541,7 @@ var Storage = React.createClass({
                             duration: 0,
                             onShow: this.setHighlightIndex(pair[0]),
                             onHide: this.setHighlightIndex(null),
-                            html: React.createElement('span', null, `The gram '${entry[0]}' comes from the word '${fs.items[3][pair[0]][1]}', item number `, React.createElement('span', {style: {color: 'red'}}, pair[0]), ` in fuzzyset.items`),
+                            html: React.createElement('span', null, `The gram '${entry[0]}' appears in the word `, React.createElement('b', null, `'${fs.items[3][pair[0]][1]}'`), `, item number `, React.createElement('span', {style: {color: 'red'}}, pair[0]), ` in fuzzyset.items`),
                             key: 'item-index'
                           }, pair[0]),
                           React.createElement('span', {key: 'comma'}, ', '),
@@ -1550,7 +1550,7 @@ var Storage = React.createClass({
                             key: 'count',
                             duration: 0,
                             // position: 'bottom',
-                            html: React.createElement('span', null, `The gram '${entry[0]}' appears in '${fs.items[3][pair[0]][1]}' `, React.createElement('span', {style: {color: 'red'}}, pair[1]), ` ${pair[1] == 1 ? 'time': 'times'}`)
+                            html: React.createElement('span', null, `The gram '${entry[0]}' appears in `, React.createElement('b', null, `'${fs.items[3][pair[0]][1]}' `), React.createElement('span', {style: {color: 'red'}}, pair[1]), ` ${pair[1] == 1 ? 'time': 'times'}`)
                           }, pair[1]),
                           React.createElement('span', {key: 'end-bracket'}, i == entry[1].length-1 ? ')]': ')'),
                         ])
