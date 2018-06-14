@@ -89,6 +89,14 @@
       color: red;
     }
 
+    textarea {
+      border: 1px solid #ccc;
+    }
+
+    label {
+      font-weight: normal !important;
+    }
+
   </style>
     
   <link rel="dns-prefetch" href="https://assets-cdn.github.com/">
@@ -1091,8 +1099,9 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
           <h1>TODO (production notes)</h1>
 
           <ul>
+            <li>fix scrolling on storage example</li>
+            <li>add reset to code in storage example</li>
             <li>get mathjax to work locally</li>
-            <li>design "looking up" section</li>
           </ul>
 
           <p>before publishing: </p>
@@ -1217,7 +1226,9 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
       this.updateStyle();
     },
     updateStyle: function() {
-      this.codemirrorInstance.getWrapperElement().style.height = this.props.style.height;
+      if (this.props.style && this.props.style.height !== null) {
+        this.codemirrorInstance.getWrapperElement().style.height = this.props.style.height;
+      }
     },
     componentWillReceiveProps: function(nextProps) {
       if (nextProps.options.value !== this.codemirrorInstance.getValue()) {
@@ -1633,7 +1644,7 @@ var Storage = React.createClass({
             ]),
             React.createElement('tr', {key: 'string-inputs'}, [
               React.createElement('td', {style: {verticalAlign: 'top'}}, 'List of strings: (separated by newlines)'),
-              React.createElement('td', null, React.createElement('textarea', {rows: Math.max(2, strings.length), placeholder: 'Add strings separated by newlines', value: this.state.dictionary, onChange: this.changeDictionary, style: {border: '1px solid #ccc'}})),
+              React.createElement('td', null, React.createElement('textarea', {rows: Math.max(2, strings.length), placeholder: 'Add strings separated by newlines', value: this.state.dictionary, onChange: this.changeDictionary})),
             ]),
             React.createElement('tr', {key: 'function-call'}, [
               React.createElement('td', {style: {verticalAlign: 'top'}}, 'Function call:'),
@@ -1647,7 +1658,7 @@ var Storage = React.createClass({
         ])
       ]),
       React.createElement('div', {key: 'output', className: 'result'}, React.createElement('div', null, [
-        React.createElement('h3', {style: {textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white', border: '1px solid #dfe2e5'}}, 'Result'),
+        React.createElement('h3', {style: {textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white'}}, 'Result'),
         React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '27.5% 35% 35%', gap: 15}}, [
           React.createElement('div', null, [
             React.createElement('h4', {style: {textAlign: 'center'}}, React.createElement('code', null, 'fuzzyset.matchDict')),
@@ -1835,13 +1846,60 @@ var Lookup = React.createClass({
       gramSizeLower: 2,
       useLevenshtein: false,
       lookup: 'north',
+      min_match_score: .33,
     }
+  },
+  handleDictionaryChange: function(evt) {
+    this.setState({dictionary: evt.target.value})
+  },
+  handleLookupChange: function(evt) {
+    this.setState({lookup: evt.target.value})
+  },
+  handle_levenshtein_change: function(evt) {
+    this.setState({useLevenshtein: evt.target.checked})
+  },
+  handle_upper_change: function(evt) {
+    this.setState({gramSizeUpper: parseInt(evt.target.value, 10)})
+  },
+  handle_lower_change: function(evt) {
+    this.setState({gramSizeLower: parseInt(evt.target.value, 10)})
+  },
+  handle_min_score_change: function(evt) {
+    this.setState({min_match_score: parseFloat(evt.target.value)})
   },
   render: function() {
     return React.createElement('div', null, [
-      React.createElement('h3', {key: 'header'}, 'How Fuzzyset looks up strings'),
-      React.createElement('div', {key: 'inputs'}, [
-
+      React.createElement('h3', {key: 'header', style: {marginBottom: 0}}, 'How Fuzzyset looks up strings'),
+      React.createElement('div', {key: 'inputs', style: {display: 'grid', gridTemplateColumns: '25% 30% 45%'}}, [
+        React.createElement('div', {key: 'dict'}, [
+          React.createElement('h3', {key: 'head'}, 'Dictionary'),
+          React.createElement('textarea', {key: 'textarea', value: this.state.dictionary, onChange: this.handleDictionaryChange, rows: 10}),
+          React.createElement('div', {key: 'levenshtein', style: {margin: '10px 0'}}, [
+            React.createElement('input', {key: 'useLevenshtein', type: 'checkbox', checked: this.state.useLevenshtein, onChange: this.handle_levenshtein_change, id: 'useLevenshtein'}),
+            React.createElement('label', {key: 'levenshteinlabel', htmlFor: 'useLevenshtein'}, ' useLevenshtein?'),
+          ]),
+          React.createElement('div', {key: 'gramsizeupper', style: {margin: '10px 0'}}, [
+            React.createElement('label', {key: 'upperlabel', htmlFor: 'upper'}, 'gramSizeUpper: '),
+            React.createElement('input', {key: 'upper', id: 'upper', size: this.state.gramSizeUpper.toString().length, value: this.state.gramSizeUpper, onChange: this.handle_upper_change}),
+          ]),
+          React.createElement('div', {key: 'gramsizelower', style: {margin: '10px 0'}}, [
+            React.createElement('label', {key: 'lowerlabel', htmlFor: 'lower'}, ' gramSizeLower: '),
+            React.createElement('input', {key: 'lower', id: 'lower', size: this.state.gramSizeLower.toString().length, value: this.state.gramSizeLower, onChange: this.handle_lower_change})
+          ]),
+        ]),
+        React.createElement('div', {key: 'lookup'}, [
+          React.createElement('h3', {key: 'head'}, 'Lookup'),
+          React.createElement('div', {key: 'lookup', style: {margin: '10px 0'}},
+            React.createElement('input', {value: this.state.lookup, onChange: this.handleLookupChange}),
+          ),
+          React.createElement('label', {key: 'matchscore', htmlFor: 'min_match_score'}, 'Minimum match score (0-1): '),
+          React.createElement('input', {key: 'min_match_score', id: 'min_match_score', value: this.state.min_match_score, size: this.state.min_match_score.toString().length, onChange: this.handle_min_score_change}),
+          React.createElement('h3', {key: 'doublhead'}, 'Result'),
+        ]),
+        React.createElement('div', {key: 'code'}, [
+          React.createElement('h3', {key: 'head'}, 'Code'),
+          React.createElement(ReactCodeMirror, {key: 'codemirror', options: {value: document.querySelector('#lookup').innerText}, style: {height: 100}})
+        ]),
       ]),
     ])
   }
