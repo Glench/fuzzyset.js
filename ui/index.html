@@ -35,6 +35,7 @@
     }
     .small-p {
       font-size: 13px;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
     }
     .CodeMirror {
       font-size: 14px !important;
@@ -807,12 +808,16 @@
 
         <h1>How it works</h1>
 
+        <p>The basic idea is to compare a search against potential matches in the dictionary and order the matches by a similarity score.</p>
+
         <p>The library's functionality can be broken down into three parts:</p>
+
           <ol>
-            <li>Calculating Similarity Scores</li>
-            <li>Storing the Dictionary</li>
-            <li>Looking up Matches</li>
+            <li><b>Calculating Similarity Scores</b> &mdash; how do we figure out how "similar" two strings are?</li>
+            <li><b>Storing the Dictionary</b> &mdash; how do we use the similarity algorithm to store the dictionary efficiently?</li>
+            <li><b>Looking up Matches</b> &mdash; how do we look up potential matches in that dictionary?</li>
           </ol>
+
 
         <h1>Calculating Similarity Scores</h1>
 
@@ -1099,7 +1104,6 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
           <h1>TODO (production notes)</h1>
 
           <ul>
-            <li>fix scrolling on storage example</li>
             <li>add reset to code in storage example</li>
             <li>get mathjax to work locally</li>
           </ul>
@@ -1218,6 +1222,10 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
 <script src="codemirror-5.38.0/lib/codemirror.js" charset="utf-8"></script>
 <script src="codemirror-5.38.0/mode/javascript/javascript.js" charset="utf-8"></script>
 <script>
+  function clamp(num, min, max) {
+    return num <= min ? min : num >= max ? max : num;
+  }
+
   var ReactCodeMirror = React.createClass({
     displayName: 'React-Codemirror',
     componentDidMount: function() {
@@ -1360,7 +1368,7 @@ var ConvertToVector = React.createClass({
           ),
         ]),
         React.createElement('div', {key: 'code', style: {width: 440}}, [
-            [ React.createElement('h3', {key: 'header', style: {display: 'inline-block'}}, 'Code'), this.state.code === document.querySelector('#gramCounter').innerText ? React.createElement('small', {key: 'paren', style: {paddingLeft: 5}}, '  (try editing!)') : React.createElement('a', {href: '#null', onClick: this.resetCode}, ' (reset)')],
+            [ React.createElement('h3', {key: 'header', style: {display: 'inline-block'}}, 'Code'), this.state.code === document.querySelector('#gramCounter').innerText ? React.createElement('small', {key: 'paren', style: {paddingLeft: 5}}, '  (try editing! maybe add some console.log() statements)') : React.createElement('a', {href: '#null', onClick: this.resetCode}, ' (reset)')],
             React.createElement(ReactCodeMirror, {key: 'code', className: this.state.codeError ? 'error': '', style: {height: 'auto'}, options: {value: this.state.code, mode: 'javascript', theme: 'github', onChange: this.changeCode}})
           ]
         )
@@ -1588,6 +1596,7 @@ var Storage = React.createClass({
       newString: '',
       dictionary: 'Mississippi',
       itemsHighlightIndex: null,
+      user_has_interacted: false,
     }
   },
   componentDidUpdate: function() {
@@ -1608,7 +1617,7 @@ var Storage = React.createClass({
     this.setState({code: code, codeError: error})
   },
   setHighlightIndex: function(index) {
-    return () => this.setState({itemsHighlightIndex: index})
+    return () => this.setState({itemsHighlightIndex: index, user_has_interacted: true})
   },
   render: function() {
     var strings = this.state.dictionary.split('\n');
@@ -1630,27 +1639,29 @@ var Storage = React.createClass({
 
     return React.createElement('div', null, [
       React.createElement('div', {key: 'code-and-input', style: {display: 'grid', gridTemplateColumns: '42% 56%', gap: 15}}, [
-        React.createElement('div', {key: 'strings', style:{maxHeight: 500, overflow: 'auto'}}, [
+        React.createElement('div', {key: 'strings'}, [
           React.createElement('h3', null, 'Example'),
-          React.createElement('table', {className: 'no-zebra'}, React.createElement('tbody', null, [
-            React.createElement('tr', {key: 'other-examples'}, [
-              React.createElement('td', null, 'Examples:'),
-              React.createElement('td', null, [
-                React.createElement(StorageExample, {key: '1', name: 'Two US states with shared grams', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri']}),
-                React.createElement(StorageExample, {key: '2', name: 'Three US states', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri', 'California']}),
-                React.createElement(StorageExample, {key: '3', name: 'All US states', setStrings: this.setStrings, strings: US_state_list.split('\n')}), 
-                this.state.dictionary !== 'Mississippi' ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), // TODO: set examples
+          React.createElement('div', {style: {maxHeight: 500, overflow: 'auto'}},
+            React.createElement('table', {className: 'no-zebra'}, React.createElement('tbody', null, [
+              React.createElement('tr', {key: 'other-examples'}, [
+                React.createElement('td', null, 'Examples:'),
+                React.createElement('td', null, [
+                  React.createElement(StorageExample, {key: '1', name: 'Two US states with shared grams', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri']}),
+                  React.createElement(StorageExample, {key: '2', name: 'Three US states', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri', 'California']}),
+                  React.createElement(StorageExample, {key: '3', name: 'All US states', setStrings: this.setStrings, strings: US_state_list.split('\n')}), 
+                  this.state.dictionary !== 'Mississippi' ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), // TODO: set examples
+                ]),
               ]),
-            ]),
-            React.createElement('tr', {key: 'string-inputs'}, [
-              React.createElement('td', {style: {verticalAlign: 'top'}}, 'List of strings: (separated by newlines)'),
-              React.createElement('td', null, React.createElement('textarea', {rows: Math.max(2, strings.length), placeholder: 'Add strings separated by newlines', value: this.state.dictionary, onChange: this.changeDictionary})),
-            ]),
-            React.createElement('tr', {key: 'function-call'}, [
-              React.createElement('td', {style: {verticalAlign: 'top'}}, 'Function call:'),
-              React.createElement('td', {style: {maxWidth: 140}}, React.createElement('code', null, `fuzzyset = FuzzySet([${strings.map(str => `'${str.replace("\'", "\\\'")}'`).join(', ')}], false, 3,3)`)),
-            ]),
-          ])),
+              React.createElement('tr', {key: 'string-inputs'}, [
+                React.createElement('td', {style: {verticalAlign: 'top'}}, 'List of strings: (separated by newlines)'),
+                React.createElement('td', null, React.createElement('textarea', {rows: clamp(strings.length, 2, 10), placeholder: 'Add strings separated by newlines', value: this.state.dictionary, onChange: this.changeDictionary})),
+              ]),
+              React.createElement('tr', {key: 'function-call'}, [
+                React.createElement('td', {style: {verticalAlign: 'top'}}, 'Function call:'),
+                React.createElement('td', {style: {maxWidth: 140}}, React.createElement('code', null, `fuzzyset = FuzzySet([${strings.map(str => `'${str.replace("\'", "\\\'")}'`).join(', ')}], false, 3,3)`)),
+              ]),
+            ]))
+          ),
         ]),
         React.createElement('div', {key: 'code-right'}, [
           React.createElement('h3', {key: 'header'}, 'Code'),
@@ -1658,12 +1669,10 @@ var Storage = React.createClass({
         ])
       ]),
       React.createElement('div', {key: 'output', className: 'result'}, React.createElement('div', null, [
-        React.createElement('h3', {style: {textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white'}}, 'Result'),
+        React.createElement('h3', {style: {textAlign: 'center', border: '1px solid #ccc', padding: 10, margin: 0, backgroundColor: 'white'}}, 'Result'),
         React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '27.5% 35% 35%', gap: 15}}, [
           React.createElement('div', null, [
             React.createElement('h4', {style: {textAlign: 'center'}}, React.createElement('code', null, 'fuzzyset.matchDict')),
-            React.createElement('p', {className: 'small-p'}, 'Hover over each number to get a detailed description.'),
-
             React.createElement('div', {style:{maxHeight: 600, overflow: 'auto', marginBottom: 10}},
               React.createElement('table', null, [
                 React.createElement('thead', null, [
@@ -1680,7 +1689,7 @@ var Storage = React.createClass({
                   ])
                 ]),
                 React.createElement('tbody', null, 
-                  Object.entries(fs.matchDict).map(entry => {
+                  Object.entries(fs.matchDict).map((entry,gram_i) => {
                     return React.createElement('tr', null, [
                       React.createElement('td', null, entry[0]),
                       React.createElement('td', null, entry[1].map((pair, i) => {
@@ -1699,10 +1708,11 @@ var Storage = React.createClass({
                             className: 'detail-hover',
                             key: 'count',
                             duration: 0,
-                            // position: 'bottom',
+                            onShow: this.setHighlightIndex(null),                            
                             html: React.createElement('span', null, `The gram "${entry[0]}" appears in `, React.createElement('b', null, `"${fs.items[3][pair[0]][1]}" `), React.createElement('span', {style: {color: 'red'}}, pair[1]), ` ${pair[1] == 1 ? 'time': 'times'}`)
                           }, pair[1]),
                           React.createElement('span', {key: 'end-bracket'}, i == entry[1].length-1 ? ')]': ')'),
+                          !this.state.user_has_interacted && gram_i == 0 && i == entry[1].length-1 ? React.createElement('p', {className: 'small-p', style: {display: 'inline-block', marginBottom: 0, marginTop: 5, marginLeft: 14}}, '\u2B06\u00A0\u00A0 \u2B06 Hover over each number for a detailed description') : null,
                         ])
                       })),
                     ])
@@ -1710,7 +1720,7 @@ var Storage = React.createClass({
                 ),
               ]),
             ),
-            React.createElement('p', {className: 'small-p'}, 'When words in the dictionary have shared grams, multiple entries are stored in matchDict. See the "-mi", "mis", "iss" grams in ', React.createElement(StorageExample, {inline: true, name: 'this example', strings: ['Mississippi', 'Missouri'], setStrings: this.setStrings}), ' for more detail.')
+            React.createElement('p', {className: 'small-p'}, 'See ', React.createElement(StorageExample, {inline: true, name: 'the "Mississippi / Missouri" example', strings: ['Mississippi', 'Missouri'], setStrings: this.setStrings}), ' for more detail when words have shared grams.')
           ]),
           React.createElement('div', null, [
             React.createElement('h4', {style: {textAlign: 'center'}}, React.createElement('code', null, 'fuzzyset.items')),
@@ -1868,6 +1878,9 @@ var Lookup = React.createClass({
     this.setState({min_match_score: parseFloat(evt.target.value)})
   },
   render: function() {
+    var fs = FuzzySet(this.state.dictionary.split('\n'), this.state.useLevenshtein, this.state.gramSizeLower, this.state.gramSizeUpper);
+    var results = fs.get(this.state.lookup, null, this.state.min_match_score);
+
     return React.createElement('div', null, [
       React.createElement('h3', {key: 'header', style: {marginBottom: 0}}, 'How Fuzzyset looks up strings'),
       React.createElement('div', {key: 'inputs', style: {display: 'grid', gridTemplateColumns: '25% 30% 45%'}}, [
@@ -1893,12 +1906,28 @@ var Lookup = React.createClass({
             React.createElement('input', {value: this.state.lookup, onChange: this.handleLookupChange}),
           ),
           React.createElement('label', {key: 'matchscore', htmlFor: 'min_match_score'}, 'Minimum match score (0-1): '),
-          React.createElement('input', {key: 'min_match_score', id: 'min_match_score', value: this.state.min_match_score, size: this.state.min_match_score.toString().length, onChange: this.handle_min_score_change}),
+          React.createElement('input', {key: 'min_match_score', id: 'min_match_score', value: this.state.min_match_score, size: this.state.min_match_score.toString().length, style: {display: 'block'}, onChange: this.handle_min_score_change}),
           React.createElement('h3', {key: 'doublhead'}, 'Result'),
+          React.createElement('div', {key: 'results'},
+            React.createElement('table', null, React.createElement('tbody', null, [
+              React.createElement('tr', {key: 'head'}, [
+                React.createElement('th', {key: 'matchhead'}, 'Match'),
+                React.createElement('th', {key: 'scorehead'}, 'Score'),
+              ]),
+              results ? results.map((result,i) => {
+                return React.createElement('tr', null, [
+                  React.createElement('td', {key: `match-${i}`}, result[1]),
+                  React.createElement('td', {key: `score-${i}`}, result[0] == Math.floor(result[0]) ? result[0] : result[0].toFixed(3))
+                ])
+              }) : React.createElement('tr', null, [
+                React.createElement('td', {colSpan: 2, style: {textAlign: 'center'}}, 'No matches')
+              ])
+            ]))
+          )
         ]),
         React.createElement('div', {key: 'code'}, [
           React.createElement('h3', {key: 'head'}, 'Code'),
-          React.createElement(ReactCodeMirror, {key: 'codemirror', options: {value: document.querySelector('#lookup').innerText}, style: {height: 100}})
+          React.createElement(ReactCodeMirror, {key: 'codemirror', options: {value: document.querySelector('#lookup').innerText, readOnly: true}, style: {height: '700px'}})
         ]),
       ]),
     ])
