@@ -948,9 +948,16 @@ fuzzyset._normalizeStr = function(str) {
 
           <h1>Looking Up Matches</h1>
 
-          <p>To look up a user's input string in the dictionary, we first look up the word in <code>fuzzyset.exactSet</code>. If it's there, then we found a perfect match and can return it right away.</p>
+          <p>The algorithm for looking up matches is as follows:</p>
 
-          <p>Otherwise, we break up the word into grams and look up the grams in <code>fuzzyset.matchDict</code> to get a list of words with shared grams. We compute the cosine similarity for each using the gram counts in <code>fuzzyset.matchDict</code> and the magnitude in <code>fuzzyset.items</code>:</p>
+          <ol>
+            <li>If there's an exact match, return that result. Otherwise...</li>
+            <li>Starting with <code>gramSizeUpper</code>, look up potential matches with at least one gram in common (a dictionary lookup in <code>fuzzyset.matchDict</code>), calculate the cosine similarity between the lookup string and the match, and sort the results by that score. Return all results with scores above the <code>minMatchScore</code>.</li>
+            <li>If <code>useLevenshtein</code> is <code>true</code>, compute the <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a> for the top 50 matching strings and return those results sorted by Levenshtein distance with scores above the <code>minMatchScore</code>. (Levenshtein distance is useful for finding misspellings where letters are out of order.)</li>
+            <li>If no results were found for steps 2 or 3, try again with the next largest gram size. (Lower gram sizes will generally create more matches of lower similarity.) Keep trying with lower gram sizes until results are found or <code>gramSizeLower</code> is reached.</li>
+          </ol>
+
+          <p>Here's how this looks in practice:</p>
 
 <script id="lookup">// helper functions
 var levenshtein = function(str1, str2) {
@@ -1104,7 +1111,6 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
           <h1>TODO (production notes)</h1>
 
           <ul>
-            <li>add reset to code in storage example</li>
             <li>get mathjax to work locally</li>
           </ul>
 
@@ -1619,6 +1625,10 @@ var Storage = React.createClass({
   setHighlightIndex: function(index) {
     return () => this.setState({itemsHighlightIndex: index, user_has_interacted: true})
   },
+  resetCode: function(evt) {
+    evt.preventDefault();
+    this.setState({code: document.querySelector('#fuzzyset-add').innerText})
+  },
   render: function() {
     var strings = this.state.dictionary.split('\n');
 
@@ -1664,7 +1674,7 @@ var Storage = React.createClass({
           ),
         ]),
         React.createElement('div', {key: 'code-right'}, [
-          React.createElement('h3', {key: 'header'}, 'Code'),
+          React.createElement('h3', {key: 'header'}, 'Code', this.state.code == document.querySelector('#fuzzyset-add').innerText ? React.createElement('small', {style: {fontWeight: 'normal'}}, ' Try editing!') : React.createElement('small', {style: {fontWeight: 'normal'}}, React.createElement('a', {href: '#null', onClick: this.resetCode}, ' Reset'))),
           React.createElement(ReactCodeMirror, {key: 'code', className: this.state.codeError ? 'error':'', style: {height: '500px'}, options: {value: this.state.code, mode: 'javascript', onChange: this.changeCode, theme: 'github'}})
         ])
       ]),
@@ -1881,9 +1891,38 @@ var Lookup = React.createClass({
     var fs = FuzzySet(this.state.dictionary.split('\n'), this.state.useLevenshtein, this.state.gramSizeLower, this.state.gramSizeUpper);
     var results = fs.get(this.state.lookup, null, this.state.min_match_score);
 
+    var table_rows = [
+      React.createElement('tr', {key: 'table-rows'}, [
+        React.createElement('th', {key: 'lookup'}, 'Lookup (\\(A\\))'),
+        React.createElement('th', {key: 'match'}, 'Match (\\(B\\))'),
+        React.createElement('th', {key: 'a dot b'}, '\\(A \\cdot B\\)'),
+        React.createElement('th', {key: 'magnitude of a'}, '\\(\\left\\lVert A \\right\\rVert\\)'),
+        React.createElement('th', {key: 'magnitude of b'}, '\\(\\left\\lVert B \\right\\rVert\\)'),
+        React.createElement('th', {key: 'cosine similarity'}, 'Score \u25BC'),
+        this.state.useLevenshtein ? React.createElement('th', null, 'Levenshtein score') : null,
+      ])
+    ];
+    var table_columns_count = this.state.useLevenshtein ? 7 : 6;
+    for (var gram_size = this.state.gramSizeUpper; gram_size >= this.state.gramSizeLower; --gram_size) {
+      table_rows.push(React.createElement('tr', {key: `${gram_size}-grams_header`}, [
+        React.createElement('th', {key: `${gram_size}-grams_header_cell`, colSpan: table_columns_count}, `${gram_size}-gram matches`)
+        ])
+      )
+
+      var loop_results = [];
+
+      var lookup_vector = _gramCounter(this.state.lookup, gram_size) 
+
+      if (loop_results.length == 0) {
+        table_rows.push(React.createElement('tr', {key: `${gram_size}-no-results`}, 
+          React.createElement('th', {colSpan: table_columns_count, style: {fontStyle: 'italic', fontWeight: 'normal'}}, 'No matches')
+        ))
+      }
+    }
+
     return React.createElement('div', null, [
       React.createElement('h3', {key: 'header', style: {marginBottom: 0}}, 'How Fuzzyset looks up strings'),
-      React.createElement('div', {key: 'inputs', style: {display: 'grid', gridTemplateColumns: '25% 30% 45%'}}, [
+      React.createElement('div', {key: 'inputs', style: {display: 'grid', gridTemplateColumns: '25% 27% 48%'}}, [
         React.createElement('div', {key: 'dict'}, [
           React.createElement('h3', {key: 'head'}, 'Dictionary'),
           React.createElement('textarea', {key: 'textarea', value: this.state.dictionary, onChange: this.handleDictionaryChange, rows: 10}),
@@ -1930,6 +1969,8 @@ var Lookup = React.createClass({
           React.createElement(ReactCodeMirror, {key: 'codemirror', options: {value: document.querySelector('#lookup').innerText, readOnly: true}, style: {height: '700px'}})
         ]),
       ]),
+      React.createElement('h3', {key: 'results-header', style: {border: '1px solid rgb(204,204,204)', textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white'}}, 'How Lookup Works'),
+      React.createElement('table', {key: 'how-it-works-table', style: {display: 'table'}}, React.createElement('tbody', null, table_rows))
     ])
   }
 })
