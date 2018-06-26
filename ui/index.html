@@ -101,6 +101,10 @@
     tr.filtered td {
       color: #999;
     }
+    th.sorted:after {
+      content: '\25BC';
+      padding-left: 3px;
+    }
 
   </style>
     
@@ -1115,10 +1119,11 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
           <h1>TODO (production notes)</h1>
 
           <ul>
-            <li>add levenshtein column</li>
+            <li>look up why 'nroth' shows minnesota in results but not in table</li>
+            <li>figure out why 'nroth kadota' has a weird result with minnesota</li>
             <li>add exact match special screen</li>
             <li>add line for filtered below</li>
-            <li>add examples to try for lookup explanation</li>
+            <li>add examples to try for lookup explanation ('nroth kadota', 'no')</li>
             <li>somehow highlight shared grams or have column of shared grams</li>
             <li>think about adding pop-up for A dot B, magnitude of A and B, showing how those were calculated</li>
           </ul>
@@ -1927,8 +1932,8 @@ var Lookup = React.createClass({
         React.createElement('th', {key: 'a dot b'}, '\\(A \\cdot B\\)'),
         React.createElement('th', {key: 'magnitude of a'}, '\\(\\left\\lVert A \\right\\rVert\\)'),
         React.createElement('th', {key: 'magnitude of b'}, '\\(\\left\\lVert B \\right\\rVert\\)'),
-        React.createElement('th', {key: 'cosine similarity'}, '$$\\frac{A \\cdot B}{\\left\\lVert A \\right\\rVert \\left\\lVert B \\right\\rVert}$$ Score \u25BC'),
-        this.state.useLevenshtein ? React.createElement('th', null, 'Levenshtein score') : null,
+        React.createElement('th', {key: 'cosine similarity', className: this.state.useLevenshtein ? '' : 'sorted'}, `$$\\frac{A \\cdot B}{\\left\\lVert A \\right\\rVert \\left\\lVert B \\right\\rVert}$$ Score`),
+        this.state.useLevenshtein ? React.createElement('th', {key: 'levenshtein_header', className: this.state.useLevenshtein ? 'sorted' : ''}, `Levenshtein score`) : null,
       ])
     ];
     var table_columns_count = this.state.useLevenshtein ? 7 : 6;
@@ -1983,21 +1988,32 @@ var Lookup = React.createClass({
         match_rows.push(row)
       }
 
+      if (this.state.useLevenshtein) {
+        var truncated_rows = Math.min(50, match_rows.length)
+        for (var k = 0; k < truncated_rows; ++k) {
+          var row = match_rows[k];
+          row.levenshtein_distance = _distance(row.match, normalized_lookup);
+        }
+        match_rows.sort(sortDescending('levenshtein_distance'))
+      }
+
       match_rows.sort(sortDescending('cosine_similarity'));
       var first_filtered_row = null;
       match_rows.forEach((row, j) => {
-        var score = row.cosine_similarity;
+        var score = this.state.useLevenshtein ? row.levenshtein_distance : row.cosine_similarity;
         table_rows.push(React.createElement('tr', {key: `gramsize-${gram_size}-row-${j}`, className: score < this.state.min_match_score ? 'filtered' : ''}, [
-          React.createElement('td', null, this.state.lookup),
-          React.createElement('td', null, row.match),
-          React.createElement('td', null, row.dot_product),
-          React.createElement('td', null, lookup_magnitude == Math.floor(lookup_magnitude) ? lookup_magnitude : lookup_magnitude.toFixed(3)),
-          React.createElement('td', null, row.magnitude == Math.floor(row.magnitude) ? row.magnitude : row.magnitude.toFixed(3)),
-          React.createElement('td', null, row.cosine_similarity == Math.floor(row.cosine_similarity) ? row.cosine_similarity : row.cosine_similarity.toFixed(3)),
+          React.createElement('td', {key: 'lookup'}, this.state.lookup),
+          React.createElement('td', {key: 'match'}, row.match),
+          React.createElement('td', {key: 'dot_product'}, row.dot_product),
+          React.createElement('td', {key: 'a_magnitude'}, lookup_magnitude == Math.floor(lookup_magnitude) ? lookup_magnitude : lookup_magnitude.toFixed(3)),
+          React.createElement('td', {key: 'b_magnitude'}, row.magnitude == Math.floor(row.magnitude) ? row.magnitude : row.magnitude.toFixed(3)),
+          React.createElement('td', {key: 'cosine'}, row.cosine_similarity == Math.floor(row.cosine_similarity) ? row.cosine_similarity : row.cosine_similarity.toFixed(3)),
+          this.state.useLevenshtein ? React.createElement('td', {key: 'levenshtein'}, row.levenshtein_distance == Math.floor(row.levenshtein_distance) ? row.levenshtein_distance : row.levenshtein_distance.toFixed(3)) : null,
         ]))
       })
 
-      if (match_rows.length > 0 && match_rows.map(row => row.cosine_similarity).some(score => score >= this.state.min_match_score)) {
+      var key = this.state.useLevenshtein ? 'levenshtein_distance' : 'cosine_similarity';
+      if (match_rows.length > 0 && match_rows.map(row => row[key]).some(score => score >= this.state.min_match_score)) {
         break;
       }
 
