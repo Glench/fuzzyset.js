@@ -98,6 +98,10 @@
       font-weight: normal !important;
     }
 
+    tr.filtered td {
+      color: #999;
+    }
+
   </style>
     
   <link rel="dns-prefetch" href="https://assets-cdn.github.com/">
@@ -1111,7 +1115,12 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
           <h1>TODO (production notes)</h1>
 
           <ul>
-            <li>get mathjax to work locally</li>
+            <li>add levenshtein column</li>
+            <li>add exact match special screen</li>
+            <li>add line for filtered below</li>
+            <li>add examples to try for lookup explanation</li>
+            <li>somehow highlight shared grams or have column of shared grams</li>
+            <li>think about adding pop-up for A dot B, magnitude of A and B, showing how those were calculated</li>
           </ul>
 
           <p>before publishing: </p>
@@ -1857,6 +1866,26 @@ var StartExample = React.createClass({
   }
 });
 
+function isEmptyObject(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+    return true;
+}
+
+var sortDescending = function(key) {
+  return function(a,b) {
+    if (a[key] < b[key]) {
+        return 1;
+    } else if (a[key] > b[key]) {
+        return -1;
+    } else {
+        return 0;
+    }
+  }
+};
+
 var Lookup = React.createClass({
   displayName: 'Lookup',
   getInitialState: function() {
@@ -1898,26 +1927,80 @@ var Lookup = React.createClass({
         React.createElement('th', {key: 'a dot b'}, '\\(A \\cdot B\\)'),
         React.createElement('th', {key: 'magnitude of a'}, '\\(\\left\\lVert A \\right\\rVert\\)'),
         React.createElement('th', {key: 'magnitude of b'}, '\\(\\left\\lVert B \\right\\rVert\\)'),
-        React.createElement('th', {key: 'cosine similarity'}, 'Score \u25BC'),
+        React.createElement('th', {key: 'cosine similarity'}, '$$\\frac{A \\cdot B}{\\left\\lVert A \\right\\rVert \\left\\lVert B \\right\\rVert}$$ Score \u25BC'),
         this.state.useLevenshtein ? React.createElement('th', null, 'Levenshtein score') : null,
       ])
     ];
     var table_columns_count = this.state.useLevenshtein ? 7 : 6;
+
+
     for (var gram_size = this.state.gramSizeUpper; gram_size >= this.state.gramSizeLower; --gram_size) {
       table_rows.push(React.createElement('tr', {key: `${gram_size}-grams_header`}, [
         React.createElement('th', {key: `${gram_size}-grams_header_cell`, colSpan: table_columns_count}, `${gram_size}-gram matches`)
         ])
       )
 
-      var loop_results = [];
 
-      var lookup_vector = _gramCounter(this.state.lookup, gram_size) 
+      var normalized_lookup = fs._normalizeStr(this.state.lookup);
+      var lookup_vector = _gramCounter(normalized_lookup, gram_size);
+      var lookup_magnitude = 0;
+      var matches = {};
+      for (gram in lookup_vector) {
+        var gram_count = lookup_vector[gram];
+        lookup_magnitude += Math.pow(gram_count, 2);
+        if (gram in fs.matchDict) {
+          for (var i = 0; i < fs.matchDict[gram].length; ++i) {
+            var items_index_and_count_pair = fs.matchDict[gram][i];
+            var items_index = items_index_and_count_pair[0];
+            var dict_term_gram_count = items_index_and_count_pair[1];
+            if (items_index in matches) {
+              matches[items_index] += gram_count * dict_term_gram_count;
+            } else {
+              matches[items_index] = gram_count * dict_term_gram_count;
+            }
+          }
+        }
+      }
 
-      if (loop_results.length == 0) {
+      if (isEmptyObject(matches)) {
         table_rows.push(React.createElement('tr', {key: `${gram_size}-no-results`}, 
           React.createElement('th', {colSpan: table_columns_count, style: {fontStyle: 'italic', fontWeight: 'normal'}}, 'No matches')
         ))
+        continue;
       }
+
+      lookup_magnitude = Math.sqrt(lookup_magnitude);
+
+      var items = fs.items[gram_size];
+      var match_rows = [];
+      for (match_items_index in matches) {
+        var row = {
+          match: items[match_items_index][1],
+          magnitude: items[match_items_index][0],
+          dot_product: matches[match_items_index],
+          cosine_similarity: matches[match_items_index] / (lookup_magnitude * items[match_items_index][0]),
+        }
+        match_rows.push(row)
+      }
+
+      match_rows.sort(sortDescending('cosine_similarity'));
+      var first_filtered_row = null;
+      match_rows.forEach((row, j) => {
+        var score = row.cosine_similarity;
+        table_rows.push(React.createElement('tr', {key: `gramsize-${gram_size}-row-${j}`, className: score < this.state.min_match_score ? 'filtered' : ''}, [
+          React.createElement('td', null, this.state.lookup),
+          React.createElement('td', null, row.match),
+          React.createElement('td', null, row.dot_product),
+          React.createElement('td', null, lookup_magnitude == Math.floor(lookup_magnitude) ? lookup_magnitude : lookup_magnitude.toFixed(3)),
+          React.createElement('td', null, row.magnitude == Math.floor(row.magnitude) ? row.magnitude : row.magnitude.toFixed(3)),
+          React.createElement('td', null, row.cosine_similarity == Math.floor(row.cosine_similarity) ? row.cosine_similarity : row.cosine_similarity.toFixed(3)),
+        ]))
+      })
+
+      if (match_rows.length > 0 && match_rows.map(row => row.cosine_similarity).some(score => score >= this.state.min_match_score)) {
+        break;
+      }
+
     }
 
     return React.createElement('div', null, [
@@ -1965,11 +2048,11 @@ var Lookup = React.createClass({
           )
         ]),
         React.createElement('div', {key: 'code'}, [
-          React.createElement('h3', {key: 'head'}, 'Code'),
+          React.createElement('h3', {key: 'head'}, 'Code', React.createElement('small', {style: {fontWeight: 'normal'}}, '\u00A0 fuzzyset.get() is the top-level function')),
           React.createElement(ReactCodeMirror, {key: 'codemirror', options: {value: document.querySelector('#lookup').innerText, readOnly: true}, style: {height: '700px'}})
         ]),
       ]),
-      React.createElement('h3', {key: 'results-header', style: {border: '1px solid rgb(204,204,204)', textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white'}}, 'How Lookup Works'),
+      React.createElement('h3', {key: 'results-header', style: {border: '1px solid rgb(204,204,204)', textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white'}}, `Calling fuzzyset.get("${this.state.lookup.replace('"', '\\"')}", ${this.state.min_match_score})`),
       React.createElement('table', {key: 'how-it-works-table', style: {display: 'table'}}, React.createElement('tbody', null, table_rows))
     ])
   }
