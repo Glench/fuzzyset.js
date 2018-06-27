@@ -826,14 +826,14 @@
 
           <ol>
             <li><b>Calculating Similarity Scores</b> &mdash; how do we figure out how "similar" two strings are?</li>
-            <li><b>Storing the Dictionary</b> &mdash; how do we use the similarity algorithm to store the dictionary efficiently?</li>
+            <li><b>Storing the Dictionary</b> &mdash; how do we use the similarity score to store the dictionary efficiently?</li>
             <li><b>Looking up Matches</b> &mdash; how do we look up potential matches in that dictionary?</li>
           </ol>
 
 
         <h1>Calculating Similarity Scores</h1>
 
-          <p>First, how do we know how similar two strings are? In this case, we can compute a "similarity score" from 0 (not similar at all) to 1 (completely similar, the same string).</p>
+          <p>First, to find misspellings we want to have a way to compare strings. How do we know how similar two strings are? In this case, we can compute a "similarity score" from 0 (not similar at all) to 1 (completely similar, the same string).</p>
 
           <p>The formula for <a href="https://en.wikipedia.org/wiki/Cosine_similarity">cosine similarity</a> gives us a score from 0 to 1, but to use it we have to turn strings in numeric vectors. How do we do that?</p>
 
@@ -899,7 +899,7 @@ _gramCounter = function(value, gramSize) {
 
           <h1>Storing the Dictionary</h1>
 
-          <p>We want to use the formula described above to match a dictionary of strings to user input. To store strings efficiently so they can be later compared using cosine similarity, we use the following strategy:</p>
+          <p>We want to use the formula described above to match a dictionary of strings. To store strings efficiently so they can be later compared using cosine similarity, we use the following strategy:</p>
 
           <p style="text-align: center;"><img src="storage.png" alt="Annotated cosine similarity equation showing the storage of the vector parts in fuzzyset.matchDict and the vector magnitude in fuzzyset.items." /><small style="display: block;">(\(A \cdot B\) and \(\left\lVert A \right\rVert\) will be calculated on-the-fly when looking up matches.)</small></p>
 
@@ -1668,8 +1668,8 @@ var Storage = React.createClass({
               React.createElement('tr', {key: 'other-examples'}, [
                 React.createElement('td', null, 'Examples:'),
                 React.createElement('td', null, [
-                  React.createElement(StorageExample, {key: '1', name: 'Two US states with shared grams', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri']}),
-                  React.createElement(StorageExample, {key: '2', name: 'Three US states', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri', 'California']}),
+                  React.createElement(StorageExample, {key: '1', name: 'Mississippi / Missouri', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri']}),
+                  React.createElement(StorageExample, {key: '2', name: 'Mississippi / Missouri / California', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri', 'California']}),
                   React.createElement(StorageExample, {key: '3', name: 'All US states', setStrings: this.setStrings, strings: US_state_list.split('\n')}), 
                   this.state.dictionary !== 'Mississippi' ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), 
                 ]),
@@ -1707,7 +1707,7 @@ var Storage = React.createClass({
                     React.createElement('th', null, 'array of:'),
                   ]),
                   React.createElement('tr', null, [
-                    React.createElement('th', null, '(index to fuzzyset.items, count)'),
+                    React.createElement('th', null, '(index to fuzzyset.items, count of \\(B\\))'),
                   ])
                 ]),
                 React.createElement('tbody', null, 
@@ -1734,7 +1734,7 @@ var Storage = React.createClass({
                             html: React.createElement('span', null, `The gram "${entry[0]}" appears in `, React.createElement('b', null, `"${fs.items[3][pair[0]][1]}" `), React.createElement('span', {style: {color: 'red'}}, pair[1]), ` ${pair[1] == 1 ? 'time': 'times'}`)
                           }, pair[1]),
                           React.createElement('span', {key: 'end-bracket'}, i == entry[1].length-1 ? ')]': ')'),
-                          !this.state.user_has_interacted && gram_i == 0 && i == entry[1].length-1 ? React.createElement('p', {className: 'small-p', style: {display: 'inline-block', marginBottom: 0, marginTop: 5, marginLeft: 14}}, '\u2B06\u00A0\u00A0 \u2B06 Hover over each number for a detailed description') : null,
+                          gram_i == 0 && i == entry[1].length-1 ? React.createElement('p', {className: 'small-p', style: {display: 'inline-block', marginBottom: 0, marginTop: 5, marginLeft: 14}}, '\u2B06\u00A0\u00A0 \u2B06 Hover over each number for a detailed description') : null,
                         ])
                       })),
                     ])
