@@ -101,6 +101,10 @@
     tr.filtered td {
       color: #999;
     }
+
+    .markdown-body table tr.first-filtered td {
+      border-top: 2px solid #bdbdbd !important;
+    }
     th.sorted:after {
       content: '\25BC';
       padding-left: 3px;
@@ -1110,7 +1114,7 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
     return newResults;
 };</script>
           <div class="fuzzyset-wide" style="padding-top: 1px">
-            <div id="fuzzyset-lookup">
+            <div id="fuzzyset-lookup" style="padding-bottom: 20px">
               Uh oh, there was an error. Do you have JavaScript enabled?
             </div>
           </div>
@@ -1119,12 +1123,6 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
           <h1>TODO (production notes)</h1>
 
           <ul>
-            <li>look up why 'nroth' shows minnesota in results but not in table</li>
-            <li>figure out why 'nroth kadota' has a weird result with minnesota</li>
-            <li>add exact match special screen</li>
-            <li>add line for filtered below</li>
-            <li>add examples to try for lookup explanation ('nroth kadota', 'no')</li>
-            <li>somehow highlight shared grams or have column of shared grams</li>
             <li>think about adding pop-up for A dot B, magnitude of A and B, showing how those were calculated</li>
           </ul>
 
@@ -1673,7 +1671,7 @@ var Storage = React.createClass({
                   React.createElement(StorageExample, {key: '1', name: 'Two US states with shared grams', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri']}),
                   React.createElement(StorageExample, {key: '2', name: 'Three US states', setStrings: this.setStrings, strings: ['Mississippi', 'Missouri', 'California']}),
                   React.createElement(StorageExample, {key: '3', name: 'All US states', setStrings: this.setStrings, strings: US_state_list.split('\n')}), 
-                  this.state.dictionary !== 'Mississippi' ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), // TODO: set examples
+                  this.state.dictionary !== 'Mississippi' ? React.createElement(StorageExample, {key: 'reset', name: 'Reset', setStrings: this.setStrings, strings: ['Mississippi']}) : React.createElement('div', null, 'Or try your own below'), 
                 ]),
               ]),
               React.createElement('tr', {key: 'string-inputs'}, [
@@ -1891,6 +1889,12 @@ var sortDescending = function(key) {
   }
 };
 
+function sharedGrams(str1, str2, gramCount) {
+  var grams1 = _gramCounter(str1, gramCount);
+  var grams2 = _gramCounter(str2, gramCount);
+  return Object.keys(grams1).filter(gram => gram in grams2)
+}
+
 var Lookup = React.createClass({
   displayName: 'Lookup',
   getInitialState: function() {
@@ -1899,7 +1903,7 @@ var Lookup = React.createClass({
       gramSizeUpper: 3,
       gramSizeLower: 2,
       useLevenshtein: false,
-      lookup: 'north',
+      lookup: 'mossisippi',
       min_match_score: .33,
     }
   },
@@ -1921,6 +1925,18 @@ var Lookup = React.createClass({
   handle_min_score_change: function(evt) {
     this.setState({min_match_score: parseFloat(evt.target.value)})
   },
+  north_example: function(evt) {
+    evt.preventDefault();
+    this.setState({min_match_score: .33, useLevenshtein: false, lookup: 'north', gramSizeUpper: 3, gramSizeLower: 2})
+  },
+  nroth_kadota_example: function(evt) {
+    evt.preventDefault();
+    this.setState({min_match_score: .33, useLevenshtein: false, lookup: 'nroth kadota', gramSizeUpper: 3, gramSizeLower: 2})
+  },
+  nroth_kadota_levenshtein_example: function(evt) {
+    evt.preventDefault();
+    this.setState({min_match_score: .33, useLevenshtein: true, lookup: 'nroth kadota', gramSizeUpper: 3, gramSizeLower: 2})
+  },
   render: function() {
     var fs = FuzzySet(this.state.dictionary.split('\n'), this.state.useLevenshtein, this.state.gramSizeLower, this.state.gramSizeUpper);
     var results = fs.get(this.state.lookup, null, this.state.min_match_score);
@@ -1929,24 +1945,31 @@ var Lookup = React.createClass({
       React.createElement('tr', {key: 'table-rows'}, [
         React.createElement('th', {key: 'lookup'}, 'Lookup (\\(A\\))'),
         React.createElement('th', {key: 'match'}, 'Match (\\(B\\))'),
-        React.createElement('th', {key: 'a dot b'}, '\\(A \\cdot B\\)'),
+        React.createElement('th', {key: 'shared'}, 'Shared Grams', React.createElement('p', {className: 'small-p'}, '(found in fuzzyset.matchDict)')),
+        React.createElement('th', {key: 'a dot b'}, '\\(A \\cdot B\\)', React.createElement('p', {className: 'small-p'})),
         React.createElement('th', {key: 'magnitude of a'}, '\\(\\left\\lVert A \\right\\rVert\\)'),
-        React.createElement('th', {key: 'magnitude of b'}, '\\(\\left\\lVert B \\right\\rVert\\)'),
+        React.createElement('th', {key: 'magnitude of b'}, '\\(\\left\\lVert B \\right\\rVert\\)', React.createElement('p', {className: 'small-p'},' (from fuzzyset.items)')),
         React.createElement('th', {key: 'cosine similarity', className: this.state.useLevenshtein ? '' : 'sorted'}, `$$\\frac{A \\cdot B}{\\left\\lVert A \\right\\rVert \\left\\lVert B \\right\\rVert}$$ Score`),
         this.state.useLevenshtein ? React.createElement('th', {key: 'levenshtein_header', className: this.state.useLevenshtein ? 'sorted' : ''}, `Levenshtein score`) : null,
       ])
     ];
-    var table_columns_count = this.state.useLevenshtein ? 7 : 6;
+    var table_columns_count = this.state.useLevenshtein ? 8 : 7;
+    var normalized_lookup = fs._normalizeStr(this.state.lookup);
+
+    if (normalized_lookup in fs.exactSet) {
+      table_rows.push(React.createElement('tr', null, React.createElement('td', {colSpan: table_columns_count, style: {textAlign: 'center'}}, `Exact result found in fuzzyset.exactSet: ${fs.exactSet[normalized_lookup]}`)))
+    }  
 
 
     for (var gram_size = this.state.gramSizeUpper; gram_size >= this.state.gramSizeLower; --gram_size) {
+      if (normalized_lookup in fs.exactSet) break;
+
       table_rows.push(React.createElement('tr', {key: `${gram_size}-grams_header`}, [
         React.createElement('th', {key: `${gram_size}-grams_header_cell`, colSpan: table_columns_count}, `${gram_size}-gram matches`)
         ])
       )
 
 
-      var normalized_lookup = fs._normalizeStr(this.state.lookup);
       var lookup_vector = _gramCounter(normalized_lookup, gram_size);
       var lookup_magnitude = 0;
       var matches = {};
@@ -1988,6 +2011,8 @@ var Lookup = React.createClass({
         match_rows.push(row)
       }
 
+      match_rows.sort(sortDescending('cosine_similarity'));
+
       if (this.state.useLevenshtein) {
         var truncated_rows = Math.min(50, match_rows.length)
         for (var k = 0; k < truncated_rows; ++k) {
@@ -1997,13 +2022,18 @@ var Lookup = React.createClass({
         match_rows.sort(sortDescending('levenshtein_distance'))
       }
 
-      match_rows.sort(sortDescending('cosine_similarity'));
-      var first_filtered_row = null;
+      var last_row_filtered = false;
       match_rows.forEach((row, j) => {
         var score = this.state.useLevenshtein ? row.levenshtein_distance : row.cosine_similarity;
-        table_rows.push(React.createElement('tr', {key: `gramsize-${gram_size}-row-${j}`, className: score < this.state.min_match_score ? 'filtered' : ''}, [
-          React.createElement('td', {key: 'lookup'}, this.state.lookup),
+        var className = score < this.state.min_match_score ? 'filtered' : '';
+        if (!last_row_filtered && score < this.state.min_match_score) {
+          className += ' first-filtered'
+          last_row_filtered = true;
+        }
+        table_rows.push(React.createElement('tr', {key: `gramsize-${gram_size}-row-${j}`, className: className}, [
+          React.createElement('td', {key: 'lookup'}, normalized_lookup),
           React.createElement('td', {key: 'match'}, row.match),
+          React.createElement('td', {key: 'shared'}, sharedGrams(normalized_lookup, row.match, gram_size).map(gram => gram.replace(/ /g, '_')).join(', ')),
           React.createElement('td', {key: 'dot_product'}, row.dot_product),
           React.createElement('td', {key: 'a_magnitude'}, lookup_magnitude == Math.floor(lookup_magnitude) ? lookup_magnitude : lookup_magnitude.toFixed(3)),
           React.createElement('td', {key: 'b_magnitude'}, row.magnitude == Math.floor(row.magnitude) ? row.magnitude : row.magnitude.toFixed(3)),
@@ -2043,7 +2073,8 @@ var Lookup = React.createClass({
           React.createElement('div', {key: 'lookup', style: {margin: '10px 0'}},
             React.createElement('input', {value: this.state.lookup, onChange: this.handleLookupChange}),
           ),
-          React.createElement('label', {key: 'matchscore', htmlFor: 'min_match_score'}, 'Minimum match score (0-1): '),
+          React.createElement('p', {key: 'e.g.', className: 'small-p'}, 'Examples: ', React.createElement('a', {href: '#null', onClick: this.north_example}, 'north, '), React.createElement('a', {href: '#null', onClick: this.nroth_kadota_example}, 'nroth kadota, '), React.createElement('a', {href: '#null', onClick: this.nroth_kadota_levenshtein_example}, 'nroth kadota with levenshtein score')),
+          React.createElement('label', {key: 'matchscore', htmlFor: 'min_match_score'}, 'Minimum score (0-1): '),
           React.createElement('input', {key: 'min_match_score', id: 'min_match_score', value: this.state.min_match_score, size: this.state.min_match_score.toString().length, style: {display: 'block'}, onChange: this.handle_min_score_change}),
           React.createElement('h3', {key: 'doublhead'}, 'Result'),
           React.createElement('div', {key: 'results'},
