@@ -1136,18 +1136,16 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
           <h1>TODO (production notes)</h1>
 
           <ul>
-            <li>add error message for code editing?</li>
           </ul>
 
           <p>before publishing: </p>
           <ul>
             <li>switch react to production</li>
-            <li>add link to newsletter post</li>
           </ul>
 
           <p>after publishing: </p>
           <ul>
-            <li>post on newsletter</li>
+            <li>post on newsletter (and add link to newsletter post)</li>
             <li>post on twitter</li>
             <li>post on explorables slack</li>
             <li>post on facebook</li>
@@ -1253,17 +1251,18 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
 
 
 <script src="../lib/fuzzyset.js" charset="utf-8"></script>
+<!-- dev build
 <script src="react.js" charset="utf-8"></script>
 <script src="react-dom.js" charset="utf-8"></script>
+-->
+
+<script src="react.min.js" charset="utf-8"></script>
+<script src="react-dom.min.js" charset="utf-8"></script>
 
 <script src="popper.min.js" charset="utf-8"></script>
 <script src="react-tippy.js" charset="utf-8"></script>
-
 <link media="all"  rel="stylesheet" href="./tippy.css">
-<!-- production build
-<script src="react.min.js" charset="utf-8"></script>
-<script src="react-dom.min.js" charset="utf-8"></script>
--->
+
 <script src="codemirror-5.38.0/lib/codemirror.js" charset="utf-8"></script>
 <script src="codemirror-5.38.0/mode/javascript/javascript.js" charset="utf-8"></script>
 <script>
@@ -1359,6 +1358,7 @@ var ConvertToVector = React.createClass({
     return {
       'code': document.querySelector('#gramCounter').innerText,
       'codeError': false,
+      'theError': null,
       'value': 'Mississippi',
       'gramSize': 3,
     }
@@ -1370,19 +1370,19 @@ var ConvertToVector = React.createClass({
     var gramSize = this.state.gramSize;
     try {
       gramSize = parseInt(evt.target.value, 10)
-    } catch(e) {
-      // TODO: display error
-    }
+    } catch(e) {}
     this.setState({gramSize: gramSize})
   },
   changeCode: function(code) {
     var error = false;
+    var the_error = null;
     try {
       eval(code)
     } catch(e) {
       error = true;
+      the_error = e.toString();
     }
-    this.setState({code: code, codeError: error})
+    this.setState({code: code, codeError: error, theError: the_error})
   },
   resetCode: function(evt) {
     evt.preventDefault();
@@ -1424,7 +1424,8 @@ var ConvertToVector = React.createClass({
         ]),
         React.createElement('div', {key: 'code', style: {width: 440}}, [
             [ React.createElement('h3', {key: 'header', style: {display: 'inline-block'}}, 'Code'), this.state.code === document.querySelector('#gramCounter').innerText ? React.createElement('small', {key: 'paren', style: {paddingLeft: 5}}, '  (try editing! maybe add some console.log() statements)') : React.createElement('a', {href: '#null', onClick: this.resetCode}, ' (reset)')],
-            React.createElement(ReactCodeMirror, {key: 'code', className: this.state.codeError ? 'error': '', style: {height: 'auto'}, options: {value: this.state.code, mode: 'javascript', theme: 'github', onChange: this.changeCode}})
+            React.createElement(ReactCodeMirror, {key: 'code', className: this.state.codeError ? 'error': '', style: {height: 'auto'}, options: {value: this.state.code, mode: 'javascript', theme: 'github', onChange: this.changeCode}}),
+            React.createElement('p', {key: 'error', className: 'small-p'}, this.state.theError)
           ]
         )
       ])
@@ -1815,7 +1816,7 @@ var Storage = React.createClass({
                       if (magnitude !== Math.floor(magnitude)) {
                         magnitude = magnitude.toFixed(3)
                       }
-                      return React.createElement('div', null, i == 0 ? '[' : '\u00A0', React.createElement('span', {style: {color: i === this.state.itemsHighlightIndex ? 'red' : 'inherit'}}, `(${magnitude}, ${pair[1]})`), `${ i == entry[1].length-1 ? ']': ''}`)
+                      return React.createElement('div', null, i == 0 ? '[' : '\u00A0', React.createElement('span', {style: {color: i === this.state.itemsHighlightIndex ? 'white' : 'inherit', backgroundColor: i == this.state.itemsHighlightIndex ? 'red': 'inherit'}}, `(${magnitude}, ${pair[1]})`), `${ i == entry[1].length-1 ? ']': ''}`)
                     })),
                   ])
                 })
