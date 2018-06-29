@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0037)https://github.com/Glench/fuzzyset.js -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
   <style>
@@ -21,6 +20,10 @@
     }
     .unhighlight {
       color: #aaa;
+    }
+    tr.highlight td {
+      background-color: #ffffd0;
+      font-weight: bold;
     }
     small {
       font-size: 13px !important;
@@ -99,7 +102,7 @@
     }
 
     tr.filtered td {
-      color: #999;
+      opacity: 0.5;
     }
 
     .markdown-body table tr.first-filtered td {
@@ -109,7 +112,17 @@
       content: '\25BC';
       padding-left: 3px;
     }
+    #fuzzyend p {
+      margin: 15px 0;
+    }
 
+    #popup-overlay.markdown-body>*:last-child {
+      margin-bottom: auto !important;
+    }
+    #popup-overlay.markdown-body table {
+      display: inline-block !important;
+      width: auto !important;
+    }
   </style>
     
   <link rel="dns-prefetch" href="https://assets-cdn.github.com/">
@@ -214,7 +227,7 @@
 
         <cite style="display: block; margin: 30px 0 30px 500px; font-style: normal; line-height: 1;">
           <p style="margin-bottom: -7px;"><a style="text-decoration: underline;" href="http://glench.com">Glen Chiacchieri</a></p>
-          <p style="margin-bottom: -7px;">June 2018</p>
+          <p style="margin-bottom: -7px;">July 2018</p>
           <p>created at <a href="https://www.recurse.com/">The Recurse Center</a></p>
         </cite>
         <small>P.S. If you're interested in this kind of thing, you might be interested in my newsletter about <a href="https://tinyletter.com/Flowsheets">The Future of Programming</a> &mdash; it even includes a post with more details about this document.</small>
@@ -1123,7 +1136,7 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
           <h1>TODO (production notes)</h1>
 
           <ul>
-            <li>think about adding pop-up for A dot B, magnitude of A and B, showing how those were calculated</li>
+            <li>add error message for code editing?</li>
           </ul>
 
           <p>before publishing: </p>
@@ -1138,10 +1151,24 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
             <li>post on twitter</li>
             <li>post on explorables slack</li>
             <li>post on facebook</li>
-            <li>post on hacker news</li>
+            <li>post to recurse center</li>
           </ul>
 
       </article>
+      <div id="fuzzyend" style="padding: 20px 100px 20px 40px;">
+          <h1>Future Directions</h1>
+
+          <p>Programming is hard &mdash; it's hard for beginners to create and understand programs which makes programming as an expressive medium inaccessible. It's hard for experts &mdash; even I (the library's maintainer!) had difficulty understanding Fuzzyset, fixing bugs, and adding features. Programming is not just hard, but in my opinion it's needlessly hard, creating suffering where none should exist.</p>
+
+          <p>I believe much of the reason programming is hard is because so far it hasn't been crafted with an eye toward human understanding, the main bottleneck for both beginners and experts. What would it look like to create programming artifacts and systems that are optimized to be understood?</p>
+
+          <p>My strategy is to start small. Can we create even one example of a well-explained system? How about a couple? What can we start to learn from those examples, and how can we bring those insights into the programming environment itself, so authors are assisted as they create their programs?</p>
+
+          <p>I don't know the answers to those questions, but I'm excited to find out.</p>
+          <hr />
+          <p>Thanks to <a href="http://geoffreylitt.com/">Geoffrey Litt</a> for helpful comments on drafts of this document.</p>
+        </div>
+
   </div>
 
 
@@ -1242,6 +1269,16 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
 <script>
   function clamp(num, min, max) {
     return num <= min ? min : num >= max ? max : num;
+  }
+
+  function showPopup(reactElement) {
+    var overlay = document.querySelector('#popup-overlay')
+    ReactDOM.render(reactElement, overlay.querySelector('#popup-content'), function() { MathJax.Hub.Queue(["Typeset",MathJax.Hub]) })
+    overlay.style.display = 'flex';
+  }
+
+  function hidePopup() {
+    document.querySelector('#popup-overlay').style.display = 'none';
   }
 
   var ReactCodeMirror = React.createClass({
@@ -1485,23 +1522,11 @@ var FinalCosine = React.createClass({
   }
 });
 
-var CosineSimilarity = React.createClass({
-  displayName: 'CosineSimilarity',
-  getInitialState: function() {
-    return {
-      A: 'mossisippi',
-      B: 'Mississippi',
-    }
-  },
-  changeA: function(evt) {
-    this.setState({A: evt.target.value})
-  },
-  changeB: function(evt) {
-    this.setState({B: evt.target.value})
-  },
+var DotProduct = React.createClass({
+  displayName: 'DotProduct',
   render: function() {
-    var Agrams = _gramCounter(this.state.A, 3);
-    var Bgrams = _gramCounter(this.state.B, 3);
+    var Agrams = _gramCounter(this.props.A, 3);
+    var Bgrams = _gramCounter(this.props.B, 3);
     var AgramEntries = Object.entries(Agrams)
     var BgramEntries = Object.entries(Bgrams)
     var biggerList = AgramEntries.length > BgramEntries.length ? AgramEntries : BgramEntries;
@@ -1532,11 +1557,11 @@ var CosineSimilarity = React.createClass({
       ]),
       React.createElement('tr', {key: 'inputs'}, [
         React.createElement('td', {key: 'input', colSpan: 2},
-          React.createElement('input', {value: this.state.A, onChange: this.changeA})
+          React.createElement('input', {value: this.props.A, onChange: this.props.changeA})
         ),
         React.createElement('td', {key: ' '}, ' '),
         React.createElement('td', {key: 'input2', colSpan: 2},
-          React.createElement('input', {value: this.state.B, onChange: this.changeB})
+          React.createElement('input', {value: this.props.B, onChange: this.props.changeB})
         ),
       ]),
       React.createElement('tr', {key: 'vector'}, [
@@ -1551,9 +1576,10 @@ var CosineSimilarity = React.createClass({
       var gram = entry[0];
       var shouldUnhighlightA = !Agrams[gram];
       var shouldUnhighlightB = !Bgrams[gram];
+      var shouldHighlightRow = gram in Agrams && gram in Bgrams;
       var mult = (Agrams[gram] || 0) * (Bgrams[gram] || 0);
       sum += mult; // stateful thing!
-      var row = React.createElement('tr', {key: gram+'-row'}, [
+      var row = React.createElement('tr', {key: gram+'-row', className: shouldHighlightRow ? 'highlight' : ''}, [
         React.createElement('td', {key: gram, className: shouldUnhighlightA ? 'unhighlight' : ''}, gram.replace(' ', '_')),
         React.createElement('td', {key: gram+'A'+Agrams[gram], className: shouldUnhighlightA ? 'unhighlight': ''}, Agrams[gram] || 0),
         React.createElement('td', {key: gram+'x'}, '×'),
@@ -1570,10 +1596,30 @@ var CosineSimilarity = React.createClass({
       React.createElement('td', {key: 'sum'+sum, style: {backgroundColor: 'yellow', fontWeight: 'bold'}}, sum)
     ]))
 
+    return React.createElement('table', {key: 'table', style: {padding: '20px 0 40px 0', margin: '0 auto', width: 600}}, React.createElement('tbody', null, rows))
+  }
+});
+
+var CosineSimilarity = React.createClass({
+  displayName: 'CosineSimilarity',
+  getInitialState: function() {
+    return {
+      A: 'mossisippi',
+      B: 'Mississippi',
+    }
+  },
+  changeA: function(evt) {
+    this.setState({A: evt.target.value})
+  },
+  changeB: function(evt) {
+    this.setState({B: evt.target.value})
+  },
+  render: function() {
+
     return React.createElement('div', null, [
       React.createElement('div', {className: 'fuzzyset-wide', style: {overflow: 'auto', height: 765}}, [
         React.createElement('h3', {key: 'header'}, 'Calculating the dot product of two vectors \\((A \\cdot B)\\)'),
-        React.createElement('table', {key: 'table', style: {padding: '20px 0 40px 0', margin: '0 auto', width: 600}}, React.createElement('tbody', null, rows))
+        React.createElement(DotProduct, {A: this.state.A, B: this.state.B, changeA: this.changeA, changeB: this.changeB})
       ]),
       React.createElement('p', null, 'To calculate the magnitudes ( \\(\\left\\lVert A \\right\\rVert\\) and \\(\\left\\lVert B \\right\\rVert\\)) we take the root of the sum of squares of each vector:'),
       React.createElement('div', {className: 'fuzzyset-wide', style: {overflow: 'auto', height: 716}}, [
@@ -2034,9 +2080,9 @@ var Lookup = React.createClass({
           React.createElement('td', {key: 'lookup'}, normalized_lookup),
           React.createElement('td', {key: 'match'}, row.match),
           React.createElement('td', {key: 'shared'}, sharedGrams(normalized_lookup, row.match, gram_size).map(gram => gram.replace(/ /g, '_')).join(', ')),
-          React.createElement('td', {key: 'dot_product'}, row.dot_product),
-          React.createElement('td', {key: 'a_magnitude'}, lookup_magnitude == Math.floor(lookup_magnitude) ? lookup_magnitude : lookup_magnitude.toFixed(3)),
-          React.createElement('td', {key: 'b_magnitude'}, row.magnitude == Math.floor(row.magnitude) ? row.magnitude : row.magnitude.toFixed(3)),
+          React.createElement('td', {key: 'dot_product'}, React.createElement('a', {href: '#null', onClick: evt => { evt.preventDefault(); showPopup(React.createElement(DotProduct, {A: normalized_lookup, B: row.match}))}}, row.dot_product)),
+          React.createElement('td', {key: 'a_magnitude'}, React.createElement('a', {href: '#null', onClick: evt => { evt.preventDefault(); showPopup(React.createElement(Magnitude, {label: 'A', value: normalized_lookup}))}}, lookup_magnitude == Math.floor(lookup_magnitude) ? lookup_magnitude : lookup_magnitude.toFixed(3))),
+          React.createElement('td', {key: 'b_magnitude'}, React.createElement('a', {href: '#null', onClick: evt => { evt.preventDefault(); showPopup(React.createElement(Magnitude, {label: 'B', value: row.match}))}}, row.magnitude == Math.floor(row.magnitude) ? row.magnitude : row.magnitude.toFixed(3))),
           React.createElement('td', {key: 'cosine'}, row.cosine_similarity == Math.floor(row.cosine_similarity) ? row.cosine_similarity : row.cosine_similarity.toFixed(3)),
           this.state.useLevenshtein ? React.createElement('td', {key: 'levenshtein'}, row.levenshtein_distance == Math.floor(row.levenshtein_distance) ? row.levenshtein_distance : row.levenshtein_distance.toFixed(3)) : null,
         ]))
@@ -2111,6 +2157,22 @@ ReactDOM.render(React.createElement(Storage), document.querySelector('#fuzzyset-
 ReactDOM.render(React.createElement(StartExample), document.querySelector('#fuzzyset-starting-example'))
 ReactDOM.render(React.createElement(Lookup), document.querySelector('#fuzzyset-lookup'))
 
+</script>
+
+<div id="popup-overlay" style="position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; background: rgba(0, 0, 0, 0.5); display: none; z-index: 999; padding-top: 100px;" class="markdown-body">
+  <div id="popup-content" style="position: relative; background: rgb(255, 255, 255); width: 50%; margin: auto; border: 1px solid rgb(187, 187, 187); padding: 15px; overflow: auto; max-height: 95%; display: grid; grid-template-columns: 1fr; justify-items: center; box-shadow: 0 0 19px rgba(0,0,0, .5);">
+  </div>
+</div>
+
+<script type="text/javascript">
+  var overlay = document.querySelector('#popup-overlay')
+  overlay.onclick = function(evt) {
+    overlay.style.display = 'none';
+  }
+  overlay.querySelector('#popup-content').onclick = function(evt) {
+    evt.stopPropagation();
+    return false;
+  }
 </script>
 
 
