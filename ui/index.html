@@ -1144,25 +1144,9 @@ fuzzyset.__get = function(value, gramSize, minMatchScore) {
             </div>
           </div>
 
+          <p>Try playing around with the different parameters to see how it affects the quality of matches. For example, the <code>useLevenshtein</code> parameter does not provide good matches if a user hasn't typed out a whole word yet.</p>
 
-          <h1>TODO (production notes)</h1>
-
-          <ul>
-          </ul>
-
-          <p>before publishing: </p>
-          <ul>
-            <li>add screenshot / link to README</li>
-          </ul>
-
-          <p>after publishing: </p>
-          <ul>
-            <li>post on newsletter (and add link to newsletter post)</li>
-            <li>post on twitter</li>
-            <li>post on explorables slack</li>
-            <li>post on facebook</li>
-            <li>post to recurse center</li>
-          </ul>
+          <p>And that's basically the whole library! We store strings so they can be looked up quickly and compared using cosine similarity.</p>
 
       </article>
       <div id="fuzzyend" style="padding: 20px 100px 20px 40px;">
