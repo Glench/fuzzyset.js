@@ -1502,7 +1502,7 @@ var FinalCosine = React.createClass({
       bMagnitude = bMagnitude.toFixed(3)
     }
     return React.createElement('div', {style: {padding: 40}}, [
-      React.createElement('div', {key: 'inputs', style: {display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 30}}, [
+      React.createElement('div', {key: 'inputs', style: {display: 'grid', gridTemplateColumns: '1fr 1fr', gridGap: 30}}, [
         React.createElement('div', {key: 'A', style: {textAlign: 'right'}}, [
           React.createElement('label', null, 'A: '),
           React.createElement('input', {value: this.props.A, onChange: this.props.changeA})
@@ -1868,7 +1868,7 @@ var StartExample = React.createClass({
   render: function() {
     var fuzzyset = FuzzySet(this.state.dictionary.split('\n'), false);
     var result = fuzzyset.get(this.state.lookup);
-    return React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '23% 26% 42%', gap: 30}}, [
+    return React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '23% 26% 42%', gridGap: 30}}, [
       React.createElement('div', {key: 'dictionary', style: {marginLeft: 20}}, [
         React.createElement('h3', {key: 'header'}, 'Dictionary'),
         React.createElement('textarea', {key: 'input', value: this.state.dictionary, onChange: this.changeDictionary, rows: 15, style: {border: '1px solid #ccc', width: '100%'}}),
