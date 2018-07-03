@@ -1871,7 +1871,7 @@ var StartExample = React.createClass({
     return React.createElement('div', {style: {display: 'grid', gridTemplateColumns: '23% 26% 42%', gap: 30}}, [
       React.createElement('div', {key: 'dictionary', style: {marginLeft: 20}}, [
         React.createElement('h3', {key: 'header'}, 'Dictionary'),
-        React.createElement('textarea', {key: 'input', value: this.state.dictionary, onChange: this.changeDictionary, rows: 15, style: {border: '1px solid #ccc'}}),
+        React.createElement('textarea', {key: 'input', value: this.state.dictionary, onChange: this.changeDictionary, rows: 15, style: {border: '1px solid #ccc', width: '100%'}}),
         React.createElement('small', {key: 'caption', style: {display: 'block'}}, 'Try replacing with your own text, separated by newlines'),
         React.createElement('h4', {key: 'code-header'}, 'Code'),
         React.createElement('pre', {key: 'code', style: {width: 200, maxHeight: 100}}, `fs = FuzzySet([${this.state.dictionary.split('\n').map(term => `'${term.replace("\'", "\\\'")}'`).join(',\n')}], false)`)
