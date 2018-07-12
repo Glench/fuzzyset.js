@@ -153,5 +153,11 @@ a.get("micael asiak");
         <script src="site/js/vendor/bootstrap.min.js"></script>
 
         <script src="lib/fuzzyset.js"></script>
+
+        <script>
+            $('iframe').on('load', function(evt) {
+                setTimeout(function() { window.scrollTo(0,0) }, 1000)
+            })
+        </script>
     </body>
 </html>
