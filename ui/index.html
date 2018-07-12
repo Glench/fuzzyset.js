@@ -1323,7 +1323,7 @@ var Vector = React.createClass({
     );
     var firstIndexNotOne = null;
     var firstIndexNotOneForSpaceCharacter = null;
-    Object.entries(this.props.vector).forEach((pair, i) => {
+    Object.entries(this.props.vector).forEach(function(pair, i) {
       var gram = pair[0];
       var count = pair[1];
       var parenthesis = null;
@@ -1342,7 +1342,7 @@ var Vector = React.createClass({
           parenthesis
         ])
       )
-    })
+    }.bind(this))
     return React.createElement('table', {style: {maxHeight: 400, overflow: 'auto'}}, React.createElement('tbody', null, rows))
   }
 });
@@ -1446,7 +1446,7 @@ var Magnitude = React.createClass({
       ])
     ];
 
-    var vector = _gramCounter(this.props.value, 3);
+    var vector = _gramCounter(this.props.value, this.props.gramSize);
     var sum = 0;
     Object.entries(vector).forEach(function(entry) {
       var gram = entry[0];
@@ -1484,10 +1484,10 @@ var FinalCosine = React.createClass({
   render: function() {
     var A = _gramCounter(this.props.A, 3);
     var B = _gramCounter(this.props.B, 3);
-    var dotproduct = Object.entries(A).map(entry => entry[1] * (B[entry[0]] || 0)).reduce(getSum);
+    var dotproduct = Object.entries(A).map(function (entry) { return entry[1] * (B[entry[0]] || 0)}).reduce(getSum);
 
-    var aMagnitude = Math.sqrt(Object.values(A).map(x => x*x).reduce(getSum));
-    var bMagnitude = Math.sqrt(Object.values(B).map(x => x*x).reduce(getSum));
+    var aMagnitude = Math.sqrt(Object.values(A).map(function(x){ return x*x }).reduce(getSum));
+    var bMagnitude = Math.sqrt(Object.values(B).map(function(x) { return x*x }).reduce(getSum));
 
     var similarity = dotproduct / (aMagnitude * bMagnitude);
 
@@ -1520,8 +1520,8 @@ var FinalCosine = React.createClass({
 var DotProduct = React.createClass({
   displayName: 'DotProduct',
   render: function() {
-    var Agrams = _gramCounter(this.props.A, 3);
-    var Bgrams = _gramCounter(this.props.B, 3);
+    var Agrams = _gramCounter(this.props.A, this.props.gramSize);
+    var Bgrams = _gramCounter(this.props.B, this.props.gramSize);
     var AgramEntries = Object.entries(Agrams)
     var BgramEntries = Object.entries(Bgrams)
     var biggerList = AgramEntries.length > BgramEntries.length ? AgramEntries : BgramEntries;
@@ -1567,7 +1567,7 @@ var DotProduct = React.createClass({
           React.createElement('th', {key: 'count2'}, 'count'),
       ]),
     ];
-    Object.entries(sharedGrams).forEach(entry => {
+    Object.entries(sharedGrams).forEach(function(entry) {
       var gram = entry[0];
       var shouldUnhighlightA = !Agrams[gram];
       var shouldUnhighlightB = !Bgrams[gram];
@@ -1585,7 +1585,7 @@ var DotProduct = React.createClass({
       ])
 
       rows.push(row);
-    })
+    }.bind(this))
     rows.push(React.createElement('tr', {key: 'sum-row'}, [
       React.createElement('td', {key: 'sum', colSpan: 6, style: {textAlign: 'right'}}, 'sum:'),
       React.createElement('td', {key: 'sum'+sum, style: {backgroundColor: 'yellow', fontWeight: 'bold'}}, sum)
@@ -1614,14 +1614,14 @@ var CosineSimilarity = React.createClass({
     return React.createElement('div', null, [
       React.createElement('div', {className: 'fuzzyset-wide', style: {overflow: 'auto', height: 765}}, [
         React.createElement('h3', {key: 'header'}, 'Calculating the dot product of two vectors \\((A \\cdot B)\\)'),
-        React.createElement(DotProduct, {A: this.state.A, B: this.state.B, changeA: this.changeA, changeB: this.changeB})
+        React.createElement(DotProduct, {A: this.state.A, B: this.state.B, changeA: this.changeA, changeB: this.changeB, gramSize: 3})
       ]),
       React.createElement('p', null, 'To calculate the magnitudes ( \\(\\left\\lVert A \\right\\rVert\\) and \\(\\left\\lVert B \\right\\rVert\\)) we take the root of the sum of squares of each vector:'),
       React.createElement('div', {className: 'fuzzyset-wide', style: {overflow: 'auto', height: 716}}, [
         React.createElement('h3', {key: 'header'}, 'Calculating the vector magnitudes \\((\\left\\lVert A \\right\\rVert\\) and \\(\\left\\lVert B \\right\\rVert)\\)'),
         React.createElement('div', {key: 'container', style: {display: 'grid', gridGap: 30, gridTemplateColumns: '1fr 1fr', marginTop: 30, marginBottom: 40}}, [
-          React.createElement(Magnitude, {key: 'a', label: 'A', value:this.state.A, change: this.changeA, style: {paddingLeft: 100}}),
-          React.createElement(Magnitude, {key: 'b', label: 'B', value:this.state.B, change: this.changeB}),
+          React.createElement(Magnitude, {key: 'a', label: 'A', value:this.state.A, change: this.changeA, style: {paddingLeft: 100}, gramSize: 3}),
+          React.createElement(Magnitude, {key: 'b', label: 'B', value:this.state.B, change: this.changeB, gramSize: 3}),
         ])
       ]),
       React.createElement('p', null, 'Putting all that together we get:'),
@@ -1676,7 +1676,7 @@ var Storage = React.createClass({
     this.setState({code: code, codeError: error})
   },
   setHighlightIndex: function(index) {
-    return () => this.setState({itemsHighlightIndex: index, user_has_interacted: true})
+    return function() { this.setState({itemsHighlightIndex: index, user_has_interacted: true}) }.bind(this);
   },
   resetCode: function(evt) {
     evt.preventDefault();
@@ -1691,7 +1691,7 @@ var Storage = React.createClass({
       fs._add = fuzzyset._add.bind(fs)
       fs._normalizeStr = fuzzyset._normalizeStr.bind(fs);
       try {
-        strings.forEach(str => fs.add(str))
+        strings.forEach(function(str) { fs.add(str) })
       } catch(e) {
         console.error(e)
         fs = FuzzySet(strings, false, 3,3);
@@ -1721,7 +1721,7 @@ var Storage = React.createClass({
               ]),
               React.createElement('tr', {key: 'function-call'}, [
                 React.createElement('td', {style: {verticalAlign: 'top'}}, 'Function call:'),
-                React.createElement('td', {style: {maxWidth: 140}}, React.createElement('code', null, `fuzzyset = FuzzySet([${strings.map(str => `'${str.replace("\'", "\\\'")}'`).join(', ')}], false, 3,3)`)),
+                React.createElement('td', {style: {maxWidth: 140}}, React.createElement('code', null, `fuzzyset = FuzzySet([${strings.map(function(str) { return `'${str.replace("\'", "\\\'")}'` }).join(', ')}], false, 3,3)`)),
               ]),
             ]))
           ),
@@ -1752,10 +1752,10 @@ var Storage = React.createClass({
                   ])
                 ]),
                 React.createElement('tbody', null, 
-                  Object.entries(fs.matchDict).map((entry,gram_i) => {
+                  Object.entries(fs.matchDict).map(function (entry,gram_i) {
                     return React.createElement('tr', null, [
                       React.createElement('td', null, entry[0]),
-                      React.createElement('td', null, entry[1].map((pair, i) => {
+                      React.createElement('td', null, entry[1].map(function(pair, i) {
                         return React.createElement('div', null, [
                           React.createElement('span', {key: 'start-bracket'}, i == 0 ? '[(' : '\u00A0('),
                           React.createElement(reactTippy.Tooltip, {
@@ -1777,9 +1777,9 @@ var Storage = React.createClass({
                           React.createElement('span', {key: 'end-bracket'}, i == entry[1].length-1 ? ')]': ')'),
                           gram_i == 0 && i == entry[1].length-1 ? React.createElement('p', {className: 'small-p', style: {display: 'inline-block', marginBottom: 0, marginTop: 5, marginLeft: 14}}, '\u2B06\u00A0\u00A0 \u2B06 Hover over each number for a detailed description') : null,
                         ])
-                      })),
+                      }.bind(this))),
                     ])
-                  })
+                  }.bind(this))
                 ),
               ]),
             ),
@@ -1802,18 +1802,18 @@ var Storage = React.createClass({
                 ])
               ]),
               React.createElement('tbody', null, 
-                Object.entries(fs.items).map(entry => {
+                Object.entries(fs.items).map(function(entry) {
                   return React.createElement('tr', null, [
                     React.createElement('td', null, entry[0]),
-                    React.createElement('td', {style: {maxWidth: 140, overflow: 'auto', whiteSpace: 'nowrap'}}, entry[1].map((pair, i) => {
+                    React.createElement('td', {style: {maxWidth: 140, overflow: 'auto', whiteSpace: 'nowrap'}}, entry[1].map(function(pair, i) {
                       var magnitude = pair[0];
                       if (magnitude !== Math.floor(magnitude)) {
                         magnitude = magnitude.toFixed(3)
                       }
                       return React.createElement('div', null, i == 0 ? '[' : '\u00A0', React.createElement('span', {style: {color: i === this.state.itemsHighlightIndex ? 'white' : 'inherit', backgroundColor: i == this.state.itemsHighlightIndex ? 'red': 'inherit'}}, `(${magnitude}, ${pair[1]})`), `${ i == entry[1].length-1 ? ']': ''}`)
-                    })),
+                    }.bind(this))),
                   ])
-                })
+                }.bind(this))
               ),
             ]),
             React.createElement('p', {className: 'small-p'}, "This table is keyed by gram size so we can make a tradeoff between precision and lookup time. More on that in the next section."),
@@ -1832,7 +1832,7 @@ var Storage = React.createClass({
                 ])
               ]),
               React.createElement('tbody', null, 
-                Object.entries(fs.exactSet).map(entry => {
+                Object.entries(fs.exactSet).map(function(entry) {
                   return React.createElement('tr', null, [
                     React.createElement('td', {style: {maxWidth: 120}}, entry[0]),
                     React.createElement('td', {style: {maxWidth: 120}}, entry[1]),
@@ -1863,7 +1863,7 @@ var StartExample = React.createClass({
     this.setState({dictionary: evt.target.value})
   },
   setLookup: function(term) {
-    return (evt) => { evt.preventDefault(); this.setState({lookup: term})}
+    return function(evt) { evt.preventDefault(); this.setState({lookup: term})}.bind(this)
   },
   render: function() {
     var fuzzyset = FuzzySet(this.state.dictionary.split('\n'), false);
@@ -1874,7 +1874,7 @@ var StartExample = React.createClass({
         React.createElement('textarea', {key: 'input', value: this.state.dictionary, onChange: this.changeDictionary, rows: 15, style: {border: '1px solid #ccc', width: '100%'}}),
         React.createElement('small', {key: 'caption', style: {display: 'block'}}, 'Try replacing with your own text, separated by newlines'),
         React.createElement('h4', {key: 'code-header'}, 'Code'),
-        React.createElement('pre', {key: 'code', style: {width: 200, maxHeight: 100}}, `fs = FuzzySet([${this.state.dictionary.split('\n').map(term => `'${term.replace("\'", "\\\'")}'`).join(',\n')}], false)`)
+        React.createElement('pre', {key: 'code', style: {width: 200, maxHeight: 100}}, `fs = FuzzySet([${this.state.dictionary.split('\n').map(function(term) { return `'${term.replace("\'", "\\\'")}'` }).join(',\n')}], false)`)
       ]),
       React.createElement('div', {key: 'lookup'}, [
         React.createElement('h3', {key: 'header'}, 'Look up'),
@@ -1896,15 +1896,15 @@ var StartExample = React.createClass({
             React.createElement('th', {key: 'term-title'}, 'Dictionary Term'),
             React.createElement('th', {key: 'score-title'}, 'Similarity Score'),
           ]),
-          result ? result.map(item => React.createElement('tr', null, [
+          result ? result.map(function(item) { return React.createElement('tr', null, [
             React.createElement('td', {key: 'string'}, item[1]),
             React.createElement('td', {key: 'score'}, item[0] !== Math.floor(item[0]) ? item[0].toFixed(3) : item[0])
-          ])) : React.createElement('tr', null, [
+          ]) }) : React.createElement('tr', null, [
             React.createElement('td', {colSpan: 2, style: {textAlign: 'center', fontStyle: 'italic'}}, 'No results found')
           ])
         ])),
         React.createElement('h4', {key: 'code-header'}, 'Code'),
-        React.createElement('pre', {key: 'code'}, result ? `[${result.map(item => `[${item[0]}, '${item[1].replace("\'", "\\\'")}']`).join(',\n')}]`: 'null')
+        React.createElement('pre', {key: 'code'}, result ? `[${result.map(function(item) { return `[${item[0]}, '${item[1].replace("\'", "\\\'")}']` }).join(',\n')}]`: 'null')
       ]),
     ])
   }
@@ -1933,7 +1933,7 @@ var sortDescending = function(key) {
 function sharedGrams(str1, str2, gramCount) {
   var grams1 = _gramCounter(str1, gramCount);
   var grams2 = _gramCounter(str2, gramCount);
-  return Object.keys(grams1).filter(gram => gram in grams2)
+  return Object.keys(grams1).filter(function(gram) { return gram in grams2})
 }
 
 var Lookup = React.createClass({
@@ -1977,6 +1977,17 @@ var Lookup = React.createClass({
   nroth_kadota_levenshtein_example: function(evt) {
     evt.preventDefault();
     this.setState({min_match_score: .33, useLevenshtein: true, lookup: 'nroth kadota', gramSizeUpper: 3, gramSizeLower: 2})
+  },
+  dotproduct_click: function(normalized_lookup, match, gram_size) {
+    return function(evt) {
+      evt.preventDefault();
+      showPopup(React.createElement(DotProduct, {A: normalized_lookup, B: match, gramSize: gram_size}))
+    }
+  },
+  magnitude_click: function(label, value, gramSize) {
+    return function(evt) { 
+      evt.preventDefault();
+      showPopup(React.createElement(Magnitude, {label: label, value: value, gramSize: gramSize}))}
   },
   render: function() {
     var fs = FuzzySet(this.state.dictionary.split('\n'), this.state.useLevenshtein, this.state.gramSizeLower, this.state.gramSizeUpper);
@@ -2064,7 +2075,7 @@ var Lookup = React.createClass({
       }
 
       var last_row_filtered = false;
-      match_rows.forEach((row, j) => {
+      match_rows.forEach(function(row, j) {
         var score = this.state.useLevenshtein ? row.levenshtein_distance : row.cosine_similarity;
         var className = score < this.state.min_match_score ? 'filtered' : '';
         if (!last_row_filtered && score < this.state.min_match_score) {
@@ -2074,17 +2085,17 @@ var Lookup = React.createClass({
         table_rows.push(React.createElement('tr', {key: `gramsize-${gram_size}-row-${j}`, className: className}, [
           React.createElement('td', {key: 'lookup'}, normalized_lookup),
           React.createElement('td', {key: 'match'}, row.match),
-          React.createElement('td', {key: 'shared'}, sharedGrams(normalized_lookup, row.match, gram_size).map(gram => gram.replace(/ /g, '_')).join(', ')),
-          React.createElement('td', {key: 'dot_product'}, React.createElement('a', {href: '#null', onClick: evt => { evt.preventDefault(); showPopup(React.createElement(DotProduct, {A: normalized_lookup, B: row.match}))}}, row.dot_product)),
-          React.createElement('td', {key: 'a_magnitude'}, React.createElement('a', {href: '#null', onClick: evt => { evt.preventDefault(); showPopup(React.createElement(Magnitude, {label: 'A', value: normalized_lookup}))}}, lookup_magnitude == Math.floor(lookup_magnitude) ? lookup_magnitude : lookup_magnitude.toFixed(3))),
-          React.createElement('td', {key: 'b_magnitude'}, React.createElement('a', {href: '#null', onClick: evt => { evt.preventDefault(); showPopup(React.createElement(Magnitude, {label: 'B', value: row.match}))}}, row.magnitude == Math.floor(row.magnitude) ? row.magnitude : row.magnitude.toFixed(3))),
+          React.createElement('td', {key: 'shared'}, sharedGrams(normalized_lookup, row.match, gram_size).map(function(gram) { return gram.replace(/ /g, '_') }).join(', ')),
+          React.createElement('td', {key: 'dot_product'}, React.createElement('a', {href: '#null', onClick: this.dotproduct_click(normalized_lookup, row.match, gram_size)}, row.dot_product)),
+          React.createElement('td', {key: 'a_magnitude'}, React.createElement('a', {href: '#null', onClick: this.magnitude_click('A', normalized_lookup, gram_size)}, lookup_magnitude == Math.floor(lookup_magnitude) ? lookup_magnitude : lookup_magnitude.toFixed(3))),
+          React.createElement('td', {key: 'b_magnitude'}, React.createElement('a', {href: '#null', onClick: this.magnitude_click('B', row.match, gram_size)}, row.magnitude == Math.floor(row.magnitude) ? row.magnitude : row.magnitude.toFixed(3))),
           React.createElement('td', {key: 'cosine'}, row.cosine_similarity == Math.floor(row.cosine_similarity) ? row.cosine_similarity : row.cosine_similarity.toFixed(3)),
           this.state.useLevenshtein ? React.createElement('td', {key: 'levenshtein'}, row.levenshtein_distance == Math.floor(row.levenshtein_distance) ? row.levenshtein_distance : row.levenshtein_distance.toFixed(3)) : null,
         ]))
-      })
+      }.bind(this))
 
       var key = this.state.useLevenshtein ? 'levenshtein_distance' : 'cosine_similarity';
-      if (match_rows.length > 0 && match_rows.map(row => row[key]).some(score => score >= this.state.min_match_score)) {
+      if (match_rows.length > 0 && match_rows.map(function(row) { return row[key] }).some(function(score) { return score >= this.state.min_match_score }.bind(this))) {
         break;
       }
 
@@ -2124,7 +2135,7 @@ var Lookup = React.createClass({
                 React.createElement('th', {key: 'matchhead'}, 'Match'),
                 React.createElement('th', {key: 'scorehead'}, 'Score'),
               ]),
-              results ? results.map((result,i) => {
+              results ? results.map(function(result,i) {
                 return React.createElement('tr', null, [
                   React.createElement('td', {key: `match-${i}`}, result[1]),
                   React.createElement('td', {key: `score-${i}`}, result[0] == Math.floor(result[0]) ? result[0] : result[0].toFixed(3))
