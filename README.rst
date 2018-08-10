@@ -119,7 +119,7 @@ or::
 
     npm install fuzzyset.js
 
-
+In a CommonJS environment, the ``fuzzyset.js`` module exports the FuzzySet function.
 
 License
 -------
