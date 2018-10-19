@@ -2151,7 +2151,7 @@ var Lookup = React.createClass({
           React.createElement(ReactCodeMirror, {key: 'codemirror', options: {value: document.querySelector('#lookup').innerText, readOnly: true}, style: {height: '700px'}})
         ]),
       ]),
-      React.createElement('h3', {key: 'results-header', style: {border: '1px solid rgb(204,204,204)', textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white'}}, `Calling fuzzyset.get("${this.state.lookup.replace('"', '\\"')}", ${this.state.min_match_score})`),
+      React.createElement('h3', {key: 'results-header', style: {border: '1px solid rgb(204,204,204)', textAlign: 'center', padding: 10, margin: 0, backgroundColor: 'white'}}, `Calling fuzzyset.get("${this.state.lookup.replace('"', '\\"')}", null, ${this.state.min_match_score})`),
       React.createElement('table', {key: 'how-it-works-table', style: {display: 'table'}}, React.createElement('tbody', null, table_rows))
     ])
   }
