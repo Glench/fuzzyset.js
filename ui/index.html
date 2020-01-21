@@ -986,7 +986,6 @@ fuzzyset._normalizeStr = function(str) {
           <p>The algorithm for looking up matches is as follows:</p>
 
           <ol>
-            <li>If there's an exact match, return that result. Otherwise...</li>
             <li>Starting with <code>gramSizeUpper</code>, look up potential matches with at least one gram in common (a dictionary lookup in <code>fuzzyset.matchDict</code>), calculate the cosine similarity between the lookup string and the match, and sort the results by that score. Return all results with scores above the <code>minMatchScore</code>.</li>
             <li>If <code>useLevenshtein</code> is <code>true</code>, compute the <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a> for the top 50 matching strings and return those results sorted by Levenshtein distance with scores above the <code>minMatchScore</code>. (Levenshtein distance is useful for finding misspellings where letters are out of order.)</li>
             <li>If no results were found for steps 2 or 3, try again with the next largest gram size. (Lower gram sizes will generally create more matches of lower similarity.) Keep trying with lower gram sizes until results are found or <code>gramSizeLower</code> is reached.</li>
@@ -1043,12 +1042,6 @@ fuzzyset.get = function(value, defaultValue, minMatchScore) {
 };
 
 fuzzyset._get = function(value, minMatchScore) {
-    var normalizedValue = this._normalizeStr(value),
-        result = this.exactSet[normalizedValue];
-    if (result) {
-        return [[1, result]];
-    }
-
     var results = [];
     // start with high gram size and if there are no results, go to lower gram sizes
     for (var gramSize = this.gramSizeUpper; gramSize >= this.gramSizeLower; --gramSize) {
