@@ -60,6 +60,6 @@ In a CommonJS environment, the `fuzzyset.js` module exports the `FuzzySet` funct
 License
 -------
 
-This package is licensed under the [Prosperity Public License 3.0](LICENSE).
+This package is licensed under the [Prosperity Public License 3.0](LICENSE.md).
 
 That means that this package is free to use if your project doesn't make money. If it does make money, you have 30 days to try it for free before you have to pay a one-time licensing fee of $49 (~one hour of a junior developer's time). You can **<a href="https://licensezero.com/offers/562c0ffe-df98-4348-87b7-e60e3c37c534#buy">easily purchase a license at the bottom of this page</a>**.
