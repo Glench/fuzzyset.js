@@ -39,7 +39,7 @@ Methods
 Interactive Documentation
 -------------------------
 
-To play with the library or see how it works, check out the [interactive documentation](http://glench.github.io/fuzzyset.js/ui/):
+To play with the library or see how it works internally, check out the amazing [interactive documentation](http://glench.github.io/fuzzyset.js/ui/):
 
 ![](https://gallery.tinyletterapp.com/99afc5bd8aa788ae26037984e2d46fa0400db41f/images/5282d548-76ff-42dc-861e-e3a4337b5e8b.png)
 
