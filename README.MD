@@ -62,6 +62,8 @@ License
 
 This package is licensed under the [Prosperity Public License 3.0](LICENSE.md).
 
-That means that this package is free to use for non-commercial projects (doesn't and isn't intending to make money). If your project is commercial, you have 30 days to try this package for free before you have to pay a one-time licensing fee of $49 (~one hour of a junior developer's time). You can **<a href="https://licensezero.com/offers/562c0ffe-df98-4348-87b7-e60e3c37c534#buy">easily purchase a license at the bottom of this page</a>**.
+That means that this package is free to use for non-commercial projects (don't and aren't intending to make money). If your project is commercial, you have 30 days to try this package for free before you have to pay a one-time licensing fee of $49 (~one hour of a junior developer's time).
 
-Why this license? Since I [quit tech to become a therapist](http://glench.com/WhyIQuitTechAndBecameATherapist/), my income is much lower (due to the unjust costs of mental health care in the US, but don't get me started). I'm asking for paid licenses for Fuzzyset.js to support all the free work I've done on this project over the past 8 years (!) and so I can live a sustainable life in service of my therapy clients. If you're a small operation that would like to use Fuzzyset.js but can't swing the license, please reach out to me and we can work something out.
+You can **<a href="https://licensezero.com/offers/562c0ffe-df98-4348-87b7-e60e3c37c534#buy">purchase a commercial license instantly here</a>**.
+
+Why this license scheme? Since I [quit tech to become a therapist](http://glench.com/WhyIQuitTechAndBecameATherapist/), my income is much lower (due to the unjust costs of mental health care in the US, but don't get me started). I'm asking for paid licenses for Fuzzyset.js to support all the free work I've done on this project over the past 8 years (!) and so I can live a sustainable life in service of my therapy clients. If you're a small operation that would like to use Fuzzyset.js but can't swing the license, please reach out to me and we can work something out.
