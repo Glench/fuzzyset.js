@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "licensezero": [
+    {
+      "agentSignature": "a624a4e89726e5c7f6f175dc7a1d86398bbd806c9932a0ccc1034ec687a613f8192424f722f2557df77da0aca8c7f97ca0f2c12ddb7e0da0fcf9bcd5d5dfd801",
+      "license": {
+        "homepage": "http://github.com/Glench/fuzzyset.js",
+        "jurisdiction": "US-MA",
+        "name": "Glen Chiacchieri",
+        "projectID": "562c0ffe-df98-4348-87b7-e60e3c37c534",
+        "publicKey": "bc7fa181bd2657ef38fe8d50a92791b2383b7e0a89ad43f13d2318059650e47c",
+        "terms": "prosperity",
+        "version": "3.0.0"
+      },
+      "licensorSignature": "60d632b66ec4821ecb96f1049bf9933ef8bc85d50a6da8331fbeea18f49d3605042255545b33a17bc053fba66fbd9c5faf1b08a2bc6509b46c39f54b61eada0a"
+    }
+  ]
+}
