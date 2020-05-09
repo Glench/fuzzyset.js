@@ -55,7 +55,7 @@ or:
 ```bash
 npm install fuzzyset.js
 ```
-In a CommonJS environment, the `fuzzyset.js` module exports the `FuzzySet` function.
+(the `.js` is important). In a CommonJS environment, the `fuzzyset.js` module exports the `FuzzySet` function.
 
 License
 -------
