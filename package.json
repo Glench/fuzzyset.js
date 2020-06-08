@@ -11,6 +11,7 @@
        "url": "https://licensezero.com/offers/562c0ffe-df98-4348-87b7-e60e3c37c534"
    },
    "main":"./index.js",
+   "module":"./lib/fuzzyset.esm.js",
    "devDependencies":{
       "should":"*"
    },
