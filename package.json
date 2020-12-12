@@ -1,5 +1,5 @@
 {
-   "name": "fuzzyset.js",
+   "name": "fuzzyset",
    "description": "A fast fuzzy string set for JavaScript",
    "version": "1.0.6",
    "homepage": "http://Glench.github.com/fuzzyset.js",

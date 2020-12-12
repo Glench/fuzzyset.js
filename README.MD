@@ -28,6 +28,8 @@ Install
 ```bash
 npm install fuzzyset
 ```
+(Used to be `fuzzyset.js`.) 
+
 Then:
 ```javascript
 import FuzzySet from 'FuzzySet'
