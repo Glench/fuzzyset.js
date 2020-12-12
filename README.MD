@@ -2,6 +2,7 @@ fuzzyset - A fuzzy string set for javascript.
 =============================================
 
 **Version 1.0.0 involves a license change but no API changes. See the bottom of this document for details.**
+
 **Version 1.0.6 December 12, 2020: involves a module restructuring but no API changes. Should now work with TypeScript, ESM, CommonJS, and web (IIFE).**
 
 fuzzyset is a data structure that performs something akin to fulltext search
@@ -20,6 +21,26 @@ by using ``.get``:
 ```
 The result will be an array of ``[score, matched_value]`` arrays.
 The score is between 0 and 1, with 1 being a perfect match.
+
+Install
+--------
+
+```bash
+npm install fuzzyset
+```
+
+```javascript
+import FuzzySet from 'FuzzySet'
+
+// or, depending on your JavaScript environment...
+
+const FuzzySet = require('fuzzyset')
+```
+
+Or for use directly on the web:
+```html
+<script type="text/javascript" src="dist/fuzzyset.js"></script>
+```
 
 Construction Arguments
 ----------------------
@@ -45,26 +66,6 @@ To play with the library or see how it works internally, check out the amazing [
 
 [![Interactive documentation screenshot](https://gallery.tinyletterapp.com/99afc5bd8aa788ae26037984e2d46fa0400db41f/images/5282d548-76ff-42dc-861e-e3a4337b5e8b.png)](http://glench.github.io/fuzzyset.js/ui/)
 
-Install
---------
-
-```bash
-npm install fuzzyset
-```
-(`npm install fuzzyset.js` also works). Then:
-
-```javascript
-import FuzzySet from 'FuzzySet'
-
-// or
-
-const FuzzySet = require('fuzzyset')
-```
-
-Or for use directly on the web:
-```html
-<script type="text/javascript" src="dist/fuzzyset.js"></script>
-```
 
 
 
