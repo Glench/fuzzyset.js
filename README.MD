@@ -2,6 +2,7 @@ fuzzyset - A fuzzy string set for javascript.
 =============================================
 
 **Version 1.0.0 involves a license change but no API changes. See the bottom of this document for details.**
+**Version 1.0.6 December 12, 2020: involves a module restructuring but no API changes. Should now work with TypeScript, ESM, CommonJS, and web (IIFE).**
 
 fuzzyset is a data structure that performs something akin to fulltext search
 against data to determine likely mispellings and approximate string matching.
@@ -46,17 +47,30 @@ To play with the library or see how it works internally, check out the amazing [
 
 Install
 --------
-this:
-
-```html
-<script type="text/javascript" src="/path/to/fuzzyset.js"></script>
-```
-or:
 
 ```bash
 npm install fuzzyset
 ```
-(`npm install fuzzyset.js` also works). In a CommonJS environment, the `fuzzyset.js` module exports the `FuzzySet` function.
+(`npm install fuzzyset.js` also works). Then:
+
+```javascript
+import FuzzySet from 'FuzzySet'
+
+// or
+
+const FuzzySet = require('fuzzyset')
+```
+
+Or for use directly on the web:
+```html
+<script type="text/javascript" src="dist/fuzzyset.js"></script>
+```
+
+
+
+Develop
+--------
+To contribute to the library, edit the `lib/fuzzyset.js` file then run `npm run build` to generate all the different file formats in the `dist/` directory. Or run `npm run dev` while developing to auto-build as you change files.
 
 License
 -------

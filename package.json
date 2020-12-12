@@ -1,23 +1,31 @@
 {
-   "name":"fuzzyset.js",
-   "description":"A fast fuzzy string set for JavaScript",
-   "version":"1.0.5",
-   "homepage":"http://Glench.github.com/fuzzyset.js",
-   "repository":"git://github.com/Glench/fuzzyset.js.git",
-   "author":"Glen Chiacchieri (http://glench.com/)",
+   "name": "fuzzyset.js",
+   "description": "A fast fuzzy string set for JavaScript",
+   "version": "1.0.6",
+   "homepage": "http://Glench.github.com/fuzzyset.js",
+   "repository": "git://github.com/Glench/fuzzyset.js.git",
+   "author": "Glen Chiacchieri (http://glench.com/)",
    "license": "see LICENSE.md",
    "funding": {
-       "type": "License Zero",
-       "url": "https://licensezero.com/offers/562c0ffe-df98-4348-87b7-e60e3c37c534"
+      "type": "License Zero",
+      "url": "https://licensezero.com/offers/562c0ffe-df98-4348-87b7-e60e3c37c534"
    },
-   "main":"./index.js",
-   "devDependencies":{
-      "should":"*"
+   "main": "./dist/fuzzyset.common.js",
+   "module": "./dist/fuzzyset.esm.js",
+   "unpkg": "./dist/fuzzyset.js",
+   "jsdelivr": "./dist/fuzzyset.js",
+   "files": [
+      "dist"
+   ],
+   "devDependencies": {
+      "rollup": "^2.34.2",
+      "should": "*"
    },
-   "scripts":{
-      "test":""
+   "scripts": {
+      "build": "rollup -c",
+      "dev": "rollup -c -w"
    },
-   "engines":{
-      "node":">= 0.4.0"
+   "engines": {
+      "node": ">= 0.4.0"
    }
 }

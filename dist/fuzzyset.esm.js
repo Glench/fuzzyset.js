@@ -86,7 +86,7 @@ const FuzzySet = function(arr, useLevenshtein, gramSizeLower, gramSizeUpper) {
     fuzzyset.get = function(value, defaultValue, minMatchScore) {
         // check for value in set, returning defaultValue or null if none found
         if (minMatchScore === undefined) {
-            minMatchScore = .33
+            minMatchScore = .33;
         }
         var result = this._get(value, minMatchScore);
         if (!result && typeof defaultValue !== 'undefined') {
@@ -180,7 +180,7 @@ const FuzzySet = function(arr, useLevenshtein, gramSizeLower, gramSizeUpper) {
             if (scoreWordPair[0] >= minMatchScore) {
                 newResults.push([scoreWordPair[0], this.exactSet[scoreWordPair[1]]]);
             }
-        }.bind(this))
+        }.bind(this));
         return newResults;
     };
 
@@ -273,6 +273,4 @@ const FuzzySet = function(arr, useLevenshtein, gramSizeLower, gramSizeUpper) {
     return fuzzyset;
 };
 
-export {
-  FuzzySet as default,
-};
+export default FuzzySet;
