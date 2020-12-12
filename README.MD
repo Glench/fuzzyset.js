@@ -46,9 +46,9 @@ Construction Arguments
 ----------------------
 
  - `array`: An array of strings to initialize the data structure with
- - `useLevenshtein`: Whether or not to use the levenshtein distance to determine the match scoring. Default: True
- - `gramSizeLower`: The lower bound of gram sizes to use, inclusive (see Theory of operation). Default: 2
- - `gramSizeUpper`: The upper bound of gram sizes to use, inclusive (see Theory of operation). Default: 3
+ - `useLevenshtein`: Whether or not to use the levenshtein distance to determine the match scoring. Default: `true`
+ - `gramSizeLower`: The lower bound of gram sizes to use, inclusive (see interactive documentation). Default: `2`
+ - `gramSizeUpper`: The upper bound of gram sizes to use, inclusive (see interactive documentation). Default: `3`
 
 Methods
 -------
