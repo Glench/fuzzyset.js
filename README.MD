@@ -32,7 +32,7 @@ npm install fuzzyset
 
 Then:
 ```javascript
-import FuzzySet from 'FuzzySet'
+import FuzzySet from 'fuzzyset'
 
 // or, depending on your JavaScript environment...
 
