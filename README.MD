@@ -1,5 +1,5 @@
-fuzzyset - A fuzzy string set for javascript.
-=============================================
+fuzzyset - A fuzzy string set for javascript
+============================================
 
 **Version 1.0.0 involves a license change but no API changes. See the bottom of this document for details.**
 
@@ -80,7 +80,7 @@ License
 
 This package is licensed under the [Prosperity Public License 3.0](LICENSE.md).
 
-That means that this package is free to use for *non-commercial projects* — personal projects, public benefit projects, research, education, etc. (see the [license](LICENSE.md) for full details). If your project is commercial (even for internal use at your company), you have 30 days to try this package for free before you have to pay a one-time licensing fee of $49 (~one hour of a junior developer's time).
+That means that this package is free to use for *non-commercial projects* — personal projects, public benefit projects, research, education, etc. (see the [license](LICENSE.md) for full details). If your project is commercial (even for internal use at your company), you have 30 days to try this package for free before you have to pay a one-time licensing fee of $29.
 
 You can **<a href="https://licensezero.com/offers/562c0ffe-df98-4348-87b7-e60e3c37c534#buy">purchase a commercial license instantly here</a>**.
 
