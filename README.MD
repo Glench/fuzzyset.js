@@ -1,11 +1,7 @@
-fuzzyset - A fuzzy string set for javascript
+Fuzzyset - A fuzzy string set for javascript
 ============================================
 
-**Version 1.0.0 involves a license change but no API changes. See the bottom of this document for details.**
-
-**Version 1.0.6 December 12, 2020: involves a module restructuring but no API changes. Should now work with TypeScript, ESM, CommonJS, and web (IIFE).**
-
-fuzzyset is a data structure that performs something akin to fulltext search
+Fuzzyset is a data structure that performs something akin to fulltext search
 against data to determine likely mispellings and approximate string matching.
 
 Usage
@@ -43,6 +39,8 @@ Or for use directly on the web:
 ```html
 <script type="text/javascript" src="dist/fuzzyset.js"></script>
 ```
+
+This library should work just fine with TypeScript, too.
 
 Construction Arguments
 ----------------------
