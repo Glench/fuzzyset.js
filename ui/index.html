@@ -864,7 +864,7 @@
             To turn a string into numeric vector, we use the <code>_gramCounter</code> function which counts the character substrings ("grams") in a given string:
           </p>
 
-          <script id="gramCounter">_nonWordRe = /[^a-zA-Z0-9\u00C0-\u00FF, ]+/g;
+          <script id="gramCounter">_nonWordRe = /[^a-zA-Z0-9\u00C0-\u00FF\u0621-\u064A\u0660-\u0669, ]+/g;
 _iterateGrams = function(value, gramSize) {
     gramSize = gramSize || 2;
     var simplified = '-' + value.toLowerCase().replace(_nonWordRe, '') + '-',
