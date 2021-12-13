@@ -51,7 +51,12 @@ var FuzzySet = (function () {
               return 1 - distance / str2.length;
           }
       };
-      var _nonWordRe = /[^a-zA-Z0-9\u00C0-\u00FF, ]+/g;
+
+      // u00C0-u00FF is latin characters
+      // u0621-u064a is arabic letters
+      // u0660-u0669 is arabic numerals
+      // TODO: figure out way to do this for more languages
+      var _nonWordRe = /[^a-zA-Z0-9\u00C0-\u00FF\u0621-\u064A\u0660-\u0669, ]+/g;
 
       var _iterateGrams = function(value, gramSize) {
           gramSize = gramSize || 2;
